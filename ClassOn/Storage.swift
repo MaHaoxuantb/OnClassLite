@@ -21,32 +21,29 @@ enum SevenDay: String, CaseIterable, Codable {
 
 // this main model always exist, and could not be deleted.
 @Model
-final class CommonDays {
+final class CommonDaysModel {
+    @Attribute(.unique) var id: UUID = UUID()
     var day: SevenDay
-    var commonClasses: [CommonClass] = []
+    @Relationship(deleteRule: .cascade) var commonClasses = [CommonClass]()
     
-    init(day: SevenDay, commonClasses: [CommonClass] = []) {
+    init(id: UUID = UUID(), day: SevenDay, commonClasses: [CommonClass] = []) {
+        self.id = UUID()
         self.day = day
         self.commonClasses = commonClasses
     }
 }
 
-extension CommonDays {
-    /// Returns one instance per day of the week
-    static var allDefaults: [CommonDays] {
-        SevenDay.allCases.map { CommonDays(day: $0) }
-    }
-}
-
 @Model
 final class CommonClass {
+    @Attribute(.unique) var id: UUID = UUID()
     var name: String
     var time: Int
     var descriptions: String?
-    var details: [String: String]?
-    var parentDay: CommonDays?
+    var details: String?
+    var parentDay: CommonDaysModel?
     
-    init(name: String, time: Int, description: String? = nil, details: [String: String]?, parentDay: CommonDays? = nil) {
+    init(id: UUID = UUID(), name: String, time: Int, description: String? = nil, details: String?, parentDay: CommonDaysModel? = nil) {
+        self.id = UUID()
         self.name = name
         self.time = time
         self.descriptions = description
@@ -55,13 +52,15 @@ final class CommonClass {
     }
 }
 
-//MARK: -Other Catagories
+//MARK: -Other Categories
 @Model
-final class OtherCatagories {
+final class CategoriesModel {
+    @Attribute(.unique) var id: UUID = UUID()
     var name: String
-    @Relationship(deleteRule: .cascade) var events: [Event] = []
+    @Relationship(deleteRule: .cascade) var events = [Event]()
     
-    init(name: String, events: [Event] = []) {
+    init(id: UUID = UUID(), name: String, events: [Event] = []) {
+        self.id = id
         self.name = name
         self.events = events
     }
@@ -69,15 +68,21 @@ final class OtherCatagories {
 
 @Model
 final class Event {
+    @Attribute(.unique) var id: UUID = UUID()
     var name: String
     var date: Date
     var time: Int
-    var parentCatagory: OtherCatagories?
+    var descriptions: String?
+    var details: String?
+    var parentCategory: CategoriesModel?
     
-    init(name: String, date: Date, time: Int, parentCatagory: OtherCatagories? = nil) {
+    init(id: UUID = UUID(), name: String, date: Date, time: Int, description: String? = nil, details: String?, parentCategory: CategoriesModel? = nil) {
+        self.id = id
         self.name = name
         self.date = date
         self.time = time
-        self.parentCatagory = parentCatagory
+        self.descriptions = description
+        self.details = details
+        self.parentCategory = parentCategory
     }
 }
