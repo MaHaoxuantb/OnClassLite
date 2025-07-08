@@ -19,12 +19,15 @@ enum SevenDay: String, CaseIterable, Codable {
     case Sunday
 }
 
+// this main model always exist, and could not be deleted.
 @Model
 final class CommonDays {
     var day: SevenDay
+    var commonClasses: [CommonClass] = []
     
-    init(day: SevenDay) {
+    init(day: SevenDay, commonClasses: [CommonClass] = []) {
         self.day = day
+        self.commonClasses = commonClasses
     }
 }
 
@@ -41,12 +44,14 @@ final class CommonClass {
     var time: Int
     var descriptions: String?
     var details: [String: String]?
+    var parentDay: CommonDays?
     
-    init(name: String, time: Int, description: String? = nil, details: [String: String]?) {
+    init(name: String, time: Int, description: String? = nil, details: [String: String]?, parentDay: CommonDays? = nil) {
         self.name = name
         self.time = time
-        self.descriptions = descriptions
+        self.descriptions = description
         self.details = details
+        self.parentDay = parentDay
     }
 }
 
@@ -54,21 +59,25 @@ final class CommonClass {
 @Model
 final class OtherCatagories {
     var name: String
+    @Relationship(deleteRule: .cascade) var events: [Event] = []
     
-    init(name: String, date: Date, time: Int) {
+    init(name: String, events: [Event] = []) {
         self.name = name
+        self.events = events
     }
 }
 
 @Model
-final class Events {
+final class Event {
     var name: String
     var date: Date
     var time: Int
+    var parentCatagory: OtherCatagories?
     
-    init(name: String, date: Date, time: Int) {
+    init(name: String, date: Date, time: Int, parentCatagory: OtherCatagories? = nil) {
         self.name = name
         self.date = date
         self.time = time
+        self.parentCatagory = parentCatagory
     }
 }
