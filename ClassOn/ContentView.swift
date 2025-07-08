@@ -9,88 +9,68 @@ import SwiftUI
 import SwiftData
 
 struct ContentView: View {
+    //App Storage
+    @AppStorage("TheFirstTimeUsingApp") var isTheFirstTimeUsingApp: Bool = true
+    
+    //Models
     @Environment(\.modelContext) private var modelContext
-    @Query private var CommonDays: [CommonDaysModel]
-    @Query private var Categories: [CategoriesModel]
-
+    @Query(sort: \CommonDaysModel.number) private var CommonDays: [CommonDaysModel]
+    
+    //State
+    @State private var isShowAddCategorySheet: Bool = false
+    
     var body: some View {
-        NavigationSplitView {
-            List {
-                Section(header: Text("Common Days")) {
-                    ForEach(CommonDays) { CommonDay in
-                        NavigationLink {
-                            Text("Item at \(CommonDay.day)")
-                        } label: {
-                            Text("\(CommonDay.day)")
-                        }
-                    }
+        TabView {
+            EditView()
+                .tabItem {
+                    Label("Edit", systemImage: "square.and.pencil")
                 }
-                Section(header: Text("Category")) {
-                    ForEach(Categories) { Category in
-                        NavigationLink {
-                            Text("Item at \(Category.name)")
-                        } label: {
-                            Text("\(Category.name)")
-                        }
-                    }
-                    .onDelete(perform: deleteCategory)
+            HomeView()
+                .tabItem {
+                    Label("Home", systemImage: "house")
                 }
+        }
+        //createDefaultDaysIfNeeded
+        .onAppear {
+            if isTheFirstTimeUsingApp {
+                createDefaultDaysIfNeeded(modelContext: modelContext)
+                isTheFirstTimeUsingApp = false
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addCategory) {
-                        Label("Add Category", systemImage: "plus")
-                    }
-                }
-            }
-        } content: {
-            /*
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
-                    }
-                }
-                .onDelete(perform: deleteItems)
-            }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-             */
-        } detail: {
-            Text("Select an item")
         }
     }
+    
+    //createDefaultDaysIfNeeded
+    private func createDefaultDaysIfNeeded(modelContext: ModelContext) {
+        let fetchRequest = FetchDescriptor<CommonDaysModel>()
+        let existingDays = try? modelContext.fetch(fetchRequest)
 
-    private func addCategory() {
-        withAnimation {
-            let newItem = CategoriesModel(name: "New Category")
-            modelContext.insert(newItem)
+        if existingDays?.count ?? 0 < 7 {
+            var counter = 0 //Use counter to assign a number to order it
+            for day in SevenDay.allCases {
+                let newDay = CommonDaysModel(
+                    number: counter,
+                    day: day,
+                )
+                modelContext.insert(newDay)
+                counter += 1
+            }
+            try? modelContext.save()
         }
     }
+}
 
-    private func deleteCategory(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(Categories[index])
-            }
+struct HomeView: View {
+    var body: some View {
+        TabView {
+            Text("This is HomeView")
+            
         }
     }
 }
 
 #Preview {
-    ContentView()
-        .modelContainer(for: [CommonDaysModel.self, CategoriesModel.self], inMemory: true)
+    // Simulate first launch
+    UserDefaults.standard.set(true, forKey: "TheFirstTimeUsingApp")
+    return ContentView()
+        .modelContainer(for: CommonDaysModel.self, inMemory: true)
 }

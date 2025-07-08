@@ -23,10 +23,11 @@ struct ClassOnApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
-
+    
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            EditView()
+                .environment(\.modelContext, sharedModelContainer.mainContext)
         }
         .modelContainer(sharedModelContainer)
     }
