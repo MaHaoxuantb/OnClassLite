@@ -99,6 +99,15 @@ struct SchoolSchedule {
     static let periodDurationMinutes: [Int] = [
         45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45
     ]
+
+    /// Tags for each period, aligned with `periodStartMinutes`.
+    static let periodTags: [String] = (1...periodStartMinutes.count).map { "class\($0)" }
+
+    /// Returns the tag (e.g., "class1") for a given start minute, or nil if not found.
+    static func tag(forStartMinute minute: Int) -> String? {
+        guard let index = periodStartMinutes.firstIndex(of: minute) else { return nil }
+        return periodTags[index]
+    }
 }
 
 
