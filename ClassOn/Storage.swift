@@ -87,6 +87,7 @@ final class CommonClass {
 }
 
 //MARK: Subjects
+@Model
 final class SubjectModel {
     @Attribute(.unique)
         var id: UUID = UUID()
@@ -140,6 +141,38 @@ struct SchoolSchedule {
     static func tag(forStartMinute minute: Int) -> String? {
         guard let index = periodStartMinutes.firstIndex(of: minute) else { return nil }
         return periodTags[index]
+    }
+}
+
+// MARK: -PeriodModel (editable timetable)
+@Model
+final class PeriodModel {
+    @Attribute(.unique) var id: UUID = UUID()
+    var index: Int              // zero-based order
+    var startMinute: Int        // minutes since midnight
+    var durationMinutes: Int
+
+    init(id: UUID = UUID(),
+         index: Int,
+         startMinute: Int,
+         durationMinutes: Int) {
+        self.id = id
+        self.index = index
+        self.startMinute = startMinute
+        self.durationMinutes = durationMinutes
+    }
+}
+
+extension PeriodModel {
+    static func defaultPeriods() -> [PeriodModel] {
+        zip(SchoolSchedule.periodStartMinutes,
+            SchoolSchedule.periodDurationMinutes)
+        .enumerated()
+        .map { idx, pair in
+            PeriodModel(index: idx,
+                        startMinute: pair.0,
+                        durationMinutes: pair.1)
+        }
     }
 }
 

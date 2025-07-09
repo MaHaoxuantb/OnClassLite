@@ -25,12 +25,12 @@ struct EditView: View {
             List {
                 Section(header: Text("Settings")) {
                     NavigationLink {
-                        
+                        EditTimetableView()
                     } label: {
                         Text("Edit TimeTable")
                     }
                     NavigationLink {
-                        
+                        EditSubjectListView()
                     } label: {
                         Text("Edit Classes")
                     }
@@ -184,13 +184,13 @@ struct AddCommonClassView: View {
     @Bindable var commonDay: CommonDaysModel
     @Binding var isPresented: Bool
 
-    @State private var name: String = ""
-    @State private var selectedPeriodIndex: Int = 0
+    @Query(sort: \SubjectModel.name) private var subjects: [SubjectModel]
+    @State private var selectedSubject: SubjectModel?
+    @State private var selectedPeriodIndex = 0
     @State private var color: Color = .accentColor
-    @State private var teacherForClass: String = ""
-    @State private var teachersForSubjectText: String = ""
-    @State private var description: String = ""
-    @State private var details: String = ""
+    @State private var teacherForClass = ""
+    @State private var description = ""
+    @State private var details = ""
 
     var body: some View {
         ScrollView {
@@ -202,130 +202,79 @@ struct AddCommonClassView: View {
                         .padding()
                     Spacer()
                     Button {
-                        guard !name.isEmpty else { return }
-
+                        guard let subject = selectedSubject else { return }
                         let startMinute = SchoolSchedule.periodStartMinutes[selectedPeriodIndex]
                         let duration = SchoolSchedule.periodDurationMinutes[selectedPeriodIndex]
-
                         let newClass = CommonClass(
-                            name: name,
+                            name: subject.name,
                             isCommonClass: true,
                             startMinute: startMinute,
                             durationMinutes: duration,
                             description: description.isEmpty ? nil : description,
                             details: details.isEmpty ? nil : details,
                             teacherForClass: teacherForClass.isEmpty ? nil : teacherForClass,
-                            teachersForSubject: teachersForSubjectText
-                                .split(separator: ",")
-                                .map { $0.trimmingCharacters(in: .whitespaces) },
+                            teachersForSubject: subject.teachersForSubject,
                             color: color,
                             parentDay: commonDay
                         )
-
-                        // attach to parent & persist
                         commonDay.commonClasses.append(newClass)
                         modelContext.insert(newClass)
                         do { try modelContext.save() } catch {
                             print("Failed to save new class: \(error)")
                         }
-
                         isPresented = false
                         HapticsManager.shared.playHapticFeedback()
                     } label: {
                         Image(systemName: "checkmark.circle.fill")
                             .resizable()
                             .frame(width: 30, height: 30)
-                            .foregroundStyle(name.isEmpty ? Color.gray.opacity(0.1) : Color.gray)
+                            .foregroundStyle(selectedSubject == nil ? Color.gray.opacity(0.1) : Color.gray)
                             .padding()
                     }
                 }
 
-                // Form
                 VStack(spacing: 16) {
-                    TextField("Name", text: $name)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .foregroundStyle(.regularMaterial)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray, lineWidth: 0.2)
-                        )
+                    // Subject picker
+                    Picker("Subject", selection: $selectedSubject) {
+                        ForEach(subjects) { subject in
+                            HStack {
+                                Circle().fill(subject.color).frame(width: 10, height: 10)
+                                Text(subject.name)
+                            }
+                            .tag(Optional(subject))
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                    .frame(maxHeight: 150)
+                    .onChange(of: selectedSubject) {
+                        if let s = selectedSubject {
+                            color = s.color
+                            teacherForClass = s.teachersForSubject?.first ?? ""
+                        }
+                    }
 
+                    // Period picker
                     Picker("Period", selection: $selectedPeriodIndex) {
-                        ForEach(SchoolSchedule.periodStartMinutes.indices, id: \.self) { index in
-                            let start = SchoolSchedule.periodStartMinutes[index]
-                            let hour = start / 60
-                            let minute = start % 60
-                            Text("Period \(index + 1) – \(String(format: "%02d:%02d", hour, minute))")
-                                .tag(index)
+                        ForEach(SchoolSchedule.periodStartMinutes.indices, id: \.self) { i in
+                            let t = SchoolSchedule.periodStartMinutes[i]
+                            Text("Period \(i+1) – \(String(format: "%02d:%02d", t/60, t%60))")
+                                .tag(i)
                         }
                     }
                     .pickerStyle(.wheel)
                     .frame(maxHeight: 150)
 
-                    ColorPicker("Color", selection: $color)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .foregroundStyle(.regularMaterial)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray, lineWidth: 0.2)
-                        )
-
-                    TextField("Teachers for subject (comma separated)", text: $teachersForSubjectText)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .foregroundStyle(.regularMaterial)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray, lineWidth: 0.2)
-                        )
-
-                    // Picker for selecting the class’s teacher
-                    let subjectTeachers = teachersForSubjectText
-                        .split(separator: ",")
-                        .map { $0.trimmingCharacters(in: .whitespaces) }
-
-                    Picker("Teacher for this class", selection: $teacherForClass) {
-                        ForEach(subjectTeachers, id: \.self) { teacher in
-                            Text(teacher).tag(teacher)
-                        }
+                    // Teacher picker
+                    let teacherOptions = selectedSubject?.teachersForSubject ?? []
+                    Picker("Teacher", selection: $teacherForClass) {
+                        ForEach(teacherOptions, id: \.self) { Text($0).tag($0) }
                     }
                     .pickerStyle(.menu)
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .foregroundStyle(.regularMaterial)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.gray, lineWidth: 0.2)
-                    )
 
-                    Text("Description")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                    ColorPicker("Color", selection: $color)
                     TextField("Description", text: $description)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .foregroundStyle(.thinMaterial)
-                        )
-
                     TextField("Details", text: $details)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .foregroundStyle(.thinMaterial)
-                        )
                 }
-
                 Spacer()
             }
             .padding()
@@ -617,7 +566,265 @@ struct AddCategoryView: View {
     }
 }
 
+//MARK: -EditTimetableView
+struct EditTimetableView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \PeriodModel.index) private var periods: [PeriodModel]
+    @State private var showAddPeriod = false
+    
+    var body: some View {
+        List {
+            ForEach(periods) { period in
+                NavigationLink {
+                    PeriodDetailView(period: period)
+                } label: {
+                    HStack {
+                        Text("Period \(period.index + 1)")
+                            .font(.headline)
+                        Spacer()
+                        Text(timeString(for: period.startMinute))
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .onDelete(perform: deletePeriod)
+            .onMove(perform: movePeriod)
+        }
+        .navigationTitle("Timetable")
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) { EditButton() }
+            ToolbarItem {
+                Button {
+                    showAddPeriod.toggle()
+                    HapticsManager.shared.playHapticFeedback()
+                } label: {
+                    Label("Add Period", systemImage: "plus")
+                }
+            }
+        }
+        .sheet(isPresented: $showAddPeriod) {
+            AddPeriodView(isPresented: $showAddPeriod)
+        }
+    }
+    
+    private func deletePeriod(at offsets: IndexSet) {
+        withAnimation {
+            offsets.map { periods[$0] }.forEach(modelContext.delete)
+        }
+    }
+    private func movePeriod(from source: IndexSet, to destination: Int) {
+        var reordered = periods
+        reordered.move(fromOffsets: source, toOffset: destination)
+        for (idx, item) in reordered.enumerated() { item.index = idx }
+        try? modelContext.save()
+    }
+    private func timeString(for m: Int) -> String {
+        String(format: "%02d:%02d", m / 60, m % 60)
+    }
+}
+
+//MARK: -AddPeriodView
+struct AddPeriodView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Binding var isPresented: Bool
+    @Query private var periods: [PeriodModel]
+
+    @State private var startTime: Date = Calendar.current.startOfDay(for: Date()).addingTimeInterval(480 * 60)
+    @State private var duration = 45
+
+    var body: some View {
+        VStack {
+            HStack {
+                Text("New Period").font(.headline).padding()
+                Spacer()
+                Button {
+                    let components = Calendar.current.dateComponents([.hour, .minute], from: startTime)
+                    let startMinute = (components.hour ?? 0) * 60 + (components.minute ?? 0)
+                    let newPeriod = PeriodModel(
+                        index: periods.count,
+                        startMinute: startMinute,
+                        durationMinutes: duration)
+                    modelContext.insert(newPeriod)
+                    do {
+                        try modelContext.save()
+                    } catch {
+                        print("❌ Failed saving new Subject: \(error)")
+                    }
+                    isPresented = false
+                    HapticsManager.shared.playHapticFeedback()
+                } label: {
+                    Image(systemName: "checkmark.circle.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .foregroundStyle(.gray)
+                        .padding()
+                }
+            }
+            Form {
+                DatePicker(
+                    "Start Time",
+                    selection: $startTime,
+                    displayedComponents: .hourAndMinute
+                )
+                Stepper("Duration: \(duration) min",
+                        value: $duration,
+                        in: 1...180)
+            }
+            Spacer()
+        }
+        .padding()
+    }
+}
+
+//MARK: -PeriodDetailView
+struct PeriodDetailView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Bindable var period: PeriodModel
+    
+    var body: some View {
+        Form {
+            Stepper("Start minute: \(period.startMinute)",
+                    value: $period.startMinute,
+                    in: 0...1435,
+                    step: 5)
+            Stepper("Duration: \(period.durationMinutes) min",
+                    value: $period.durationMinutes,
+                    in: 1...180)
+        }
+        .navigationTitle("Period \(period.index + 1)")
+        .onDisappear { try? modelContext.save() }
+    }
+}
+
+
+//MARK: -EditSubjectListView
+struct EditSubjectListView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \SubjectModel.name) private var subjects: [SubjectModel]
+    @State private var showAddSubject = false
+    
+    var body: some View {
+        List {
+            ForEach(subjects) { subject in
+                NavigationLink {
+                    SubjectDetailView(subject: subject)
+                } label: {
+                    HStack {
+                        Circle().fill(subject.color).frame(width: 10, height: 10)
+                        Text(subject.name).font(.headline)
+                    }
+                }
+            }
+            .onDelete(perform: deleteSubjects)
+        }
+        .navigationTitle(Text("Subjects"))
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) { EditButton() }
+            ToolbarItem {
+                Button {
+                    showAddSubject.toggle()
+                    HapticsManager.shared.playHapticFeedback()
+                } label: {
+                    Label("Add Subject", systemImage: "plus")
+                }
+            }
+        }
+        .sheet(isPresented: $showAddSubject) {
+            AddSubjectView(isPresented: $showAddSubject)
+        }
+    }
+    
+    private func deleteSubjects(at offsets: IndexSet) {
+        withAnimation {
+            for idx in offsets { modelContext.delete(subjects[idx]) }
+        }
+    }
+}
+
+//MARK: -AddSubjectView
+struct AddSubjectView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Binding var isPresented: Bool
+    
+    @State private var name: String = ""
+    @State private var teachersText: String = ""
+    @State private var color: Color = .accentColor
+    
+    var body: some View {
+        VStack {
+            HStack {
+                Text("New Subject").font(.headline).padding()
+                Spacer()
+                Button {
+                    guard !name.isEmpty else { return }
+                    let newSubject = SubjectModel(
+                        name: name,
+                        teachersForSubject: teachersText
+                            .split(separator: ",")
+                            .map { $0.trimmingCharacters(in: .whitespaces) },
+                        color: color
+                    )
+                    modelContext.insert(newSubject)
+                    try? modelContext.save()
+                    isPresented = false
+                    HapticsManager.shared.playHapticFeedback()
+                } label: {
+                    Image(systemName: "checkmark.circle.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .foregroundStyle(name.isEmpty
+                             ? Color.gray.opacity(0.1)
+                             : Color.gray)
+                        .padding()
+                }
+            }
+            Form {
+                TextField("Name", text: $name)
+                TextField("Teachers (comma separated)", text: $teachersText)
+                ColorPicker("Color", selection: $color)
+            }
+            Spacer()
+        }
+        .padding()
+    }
+}
+
+//MARK: -SubjectDetailView
+struct SubjectDetailView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Bindable var subject: SubjectModel
+    @State private var teachersText: String
+    
+    init(subject: SubjectModel) {
+        self.subject = subject
+        _teachersText = State(initialValue:
+            subject.teachersForSubject?
+                .joined(separator: ", ") ?? "")
+    }
+    
+    var body: some View {
+        Form {
+            TextField("Name", text: $subject.name)
+            TextField("Teachers (comma separated)", text: $teachersText)
+                .onChange(of: teachersText) {
+                    subject.teachersForSubject = teachersText
+                        .split(separator: ",")
+                        .map { $0.trimmingCharacters(in: .whitespaces) }
+                }
+            ColorPicker("Color", selection: $subject.color)
+        }
+        .navigationTitle(Text(subject.name))
+        .onDisappear { try? modelContext.save() }
+    }
+}
+
 #Preview {
     EditView()
-        .modelContainer(for: [CommonDaysModel.self, CategoriesModel.self, CommonClass.self], inMemory: true)
+        .modelContainer(
+            for: [CommonDaysModel.self,
+                  CategoriesModel.self,
+                  CommonClass.self,
+                  SubjectModel.self,
+                  PeriodModel.self],
+            inMemory: true)
 }
