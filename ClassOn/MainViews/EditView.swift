@@ -32,7 +32,7 @@ struct EditView: View {
                     NavigationLink {
                         EditSubjectListView()
                     } label: {
-                        Text("Edit Classes")
+                        Text("Edit Subjects")
                     }
                 }
                 Section(header: Text("Common Days")) {
@@ -188,7 +188,7 @@ struct AddCommonClassView: View {
     @State private var selectedSubject: SubjectModel?
     @State private var selectedPeriodIndex = 0
     @State private var color: Color = .accentColor
-    @State private var teacherForClass = ""
+    @State private var teacherForClass: Teacher? = nil
     @State private var description = ""
     @State private var details = ""
 
@@ -205,6 +205,13 @@ struct AddCommonClassView: View {
                         guard let subject = selectedSubject else { return }
                         let startMinute = SchoolSchedule.periodStartMinutes[selectedPeriodIndex]
                         let duration = SchoolSchedule.periodDurationMinutes[selectedPeriodIndex]
+
+                        // Use the subject's teachersForSubject array directly
+                        let teacherEntities = subject.teachersForSubject
+                        // The selected teacher is teacherForClass
+                        let selectedTeacherEntity = teacherForClass
+
+                        // Create the new CommonClass with Teacher relationships
                         let newClass = CommonClass(
                             name: subject.name,
                             isCommonClass: true,
@@ -212,11 +219,13 @@ struct AddCommonClassView: View {
                             durationMinutes: duration,
                             description: description.isEmpty ? nil : description,
                             details: details.isEmpty ? nil : details,
-                            teacherForClass: teacherForClass.isEmpty ? nil : teacherForClass,
-                            teachersForSubject: subject.teachersForSubject,
+                            teacherForClass: selectedTeacherEntity,
+                            teachersForSubject: teacherEntities,
+                            tags: nil,
                             color: color,
                             parentDay: commonDay
                         )
+
                         commonDay.commonClasses.append(newClass)
                         modelContext.insert(newClass)
                         do { try modelContext.save() } catch {
@@ -249,7 +258,7 @@ struct AddCommonClassView: View {
                     .onChange(of: selectedSubject) {
                         if let s = selectedSubject {
                             color = s.color
-                            teacherForClass = s.teachersForSubject?.first ?? ""
+                            teacherForClass = s.teachersForSubject?.first
                         }
                     }
 
@@ -267,7 +276,9 @@ struct AddCommonClassView: View {
                     // Teacher picker
                     let teacherOptions = selectedSubject?.teachersForSubject ?? []
                     Picker("Teacher", selection: $teacherForClass) {
-                        ForEach(teacherOptions, id: \.self) { Text($0).tag($0) }
+                        ForEach(teacherOptions, id: \.id) { teacher in
+                            Text(teacher.name).tag(Optional(teacher))
+                        }
                     }
                     .pickerStyle(.menu)
 
@@ -278,6 +289,16 @@ struct AddCommonClassView: View {
                 Spacer()
             }
             .padding()
+        }
+        .onAppear {
+            if selectedSubject == nil {
+                // Auto-select the first subject
+                selectedSubject = subjects.first
+                if let first = selectedSubject {
+                    color = first.color
+                    teacherForClass = first.teachersForSubject?.first
+                }
+            }
         }
     }
 }
@@ -301,9 +322,10 @@ struct CommonClassDetailView: View {
         _color = State(initialValue: commonClass.color)
         let idx = SchoolSchedule.periodStartMinutes.firstIndex(of: commonClass.startMinute) ?? 0
         _selectedPeriodIndex = State(initialValue: idx)
-        _teacherForClass = State(initialValue: commonClass.teacherForClass ?? "")
+        _teacherForClass = State(initialValue: commonClass.teacherForClass?.name ?? "")
         _teachersForSubjectText = State(
             initialValue: commonClass.teachersForSubject?
+                .map { $0.name }
                 .joined(separator: ", ") ?? ""
         )
         _descriptionText = State(initialValue: commonClass.descriptions ?? "")
@@ -327,10 +349,23 @@ struct CommonClassDetailView: View {
                         commonClass.color = color
                         commonClass.startMinute = SchoolSchedule.periodStartMinutes[selectedPeriodIndex]
                         commonClass.durationMinutes = SchoolSchedule.periodDurationMinutes[selectedPeriodIndex]
-                        commonClass.teacherForClass = teacherForClass.isEmpty ? nil : teacherForClass
-                        commonClass.teachersForSubject = teachersForSubjectText
+                        // Build Teacher entities for all entered names
+                        var teacherEntities: [Teacher]? = nil
+                        let names = teachersForSubjectText
                             .split(separator: ",")
                             .map { $0.trimmingCharacters(in: .whitespaces) }
+                        if !names.isEmpty {
+                            teacherEntities = names.map { name in
+                                let teacher = Teacher(name: name)
+                                modelContext.insert(teacher)
+                                return teacher
+                            }
+                        }
+                        // Assign relationship arrays
+                        commonClass.teachersForSubject = teacherEntities
+                        // Assign single teacher relationship
+                        let selectedTeacherEntity = teacherEntities?.first { $0.name == teacherForClass }
+                        commonClass.teacherForClass = selectedTeacherEntity
                         commonClass.descriptions = descriptionText.isEmpty ? nil : descriptionText
                         commonClass.details = detailsText.isEmpty ? nil : detailsText
 
@@ -570,13 +605,16 @@ struct AddCategoryView: View {
 struct EditTimetableView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \PeriodModel.index) private var periods: [PeriodModel]
-    @State private var showAddPeriod = false
+    @State private var showExpandedTools: Bool = false
+    @State private var selectedPeriod: PeriodModel?
+    @State private var isShowingPeriodEditor: Bool = false
     
     var body: some View {
         List {
             ForEach(periods) { period in
-                NavigationLink {
-                    PeriodDetailView(period: period)
+                Button {
+                    selectedPeriod = period
+                    isShowingPeriodEditor = true
                 } label: {
                     HStack {
                         Text("Period \(period.index + 1)")
@@ -595,15 +633,38 @@ struct EditTimetableView: View {
             ToolbarItem(placement: .navigationBarTrailing) { EditButton() }
             ToolbarItem {
                 Button {
-                    showAddPeriod.toggle()
+                    selectedPeriod = nil
+                    isShowingPeriodEditor = true
                     HapticsManager.shared.playHapticFeedback()
                 } label: {
                     Label("Add Period", systemImage: "plus")
                 }
             }
+            ToolbarItem {
+                Menu {
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "qrcode.viewfinder")
+                        Text("Scan To Add")
+                    }
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                        Text("Share by QR Code")
+                    }
+                } label: {
+                    Label("More", systemImage: "ellipsis.circle.fill")
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .clipShape(Circle())
+                }
+            }
         }
-        .sheet(isPresented: $showAddPeriod) {
-            AddPeriodView(isPresented: $showAddPeriod)
+        .sheet(isPresented: $isShowingPeriodEditor) {
+            AddPeriodView(isPresented: $isShowingPeriodEditor, periodToEdit: selectedPeriod)
         }
     }
     
@@ -627,28 +688,51 @@ struct EditTimetableView: View {
 struct AddPeriodView: View {
     @Environment(\.modelContext) private var modelContext
     @Binding var isPresented: Bool
+    var periodToEdit: PeriodModel?
     @Query private var periods: [PeriodModel]
-
-    @State private var startTime: Date = Calendar.current.startOfDay(for: Date()).addingTimeInterval(480 * 60)
-    @State private var duration = 45
-
+    @State private var startTime: Date
+    @State private var duration: Int
+    
+    init(isPresented: Binding<Bool>, periodToEdit: PeriodModel? = nil) {
+        self._isPresented = isPresented
+        self.periodToEdit = periodToEdit
+        if let p = periodToEdit {
+            let comps = Calendar.current.dateComponents([.hour, .minute], from: Calendar.current.startOfDay(for: Date()).addingTimeInterval(TimeInterval(p.startMinute * 60)))
+            let hour = comps.hour ?? 0
+            let minute = comps.minute ?? 0
+            self._startTime = State(initialValue: Calendar.current.date(bySettingHour: hour, minute: minute, second: 0, of: Date())!)
+            self._duration = State(initialValue: p.durationMinutes)
+        } else {
+            self._startTime = State(initialValue: Calendar.current.startOfDay(for: Date()).addingTimeInterval(480 * 60))
+            self._duration = State(initialValue: 45)
+        }
+    }
+    
     var body: some View {
         VStack {
             HStack {
-                Text("New Period").font(.headline).padding()
+                Text(periodToEdit == nil ? "New Period" : "Edit Period").font(.headline).padding()
                 Spacer()
                 Button {
-                    let components = Calendar.current.dateComponents([.hour, .minute], from: startTime)
-                    let startMinute = (components.hour ?? 0) * 60 + (components.minute ?? 0)
-                    let newPeriod = PeriodModel(
-                        index: periods.count,
-                        startMinute: startMinute,
-                        durationMinutes: duration)
-                    modelContext.insert(newPeriod)
+                    if let period = periodToEdit {
+                        // update existing
+                        let comps = Calendar.current.dateComponents([.hour, .minute], from: startTime)
+                        period.startMinute = (comps.hour ?? 0) * 60 + (comps.minute ?? 0)
+                        period.durationMinutes = duration
+                    } else {
+                        // create new
+                        let comps = Calendar.current.dateComponents([.hour, .minute], from: startTime)
+                        let startMinute = (comps.hour ?? 0) * 60 + (comps.minute ?? 0)
+                        let newPeriod = PeriodModel(
+                            index: periods.count,
+                            startMinute: startMinute,
+                            durationMinutes: duration)
+                        modelContext.insert(newPeriod)
+                    }
                     do {
                         try modelContext.save()
                     } catch {
-                        print("❌ Failed saving new Subject: \(error)")
+                        print("❌ Failed saving period: \(error)")
                     }
                     isPresented = false
                     HapticsManager.shared.playHapticFeedback()
@@ -676,25 +760,7 @@ struct AddPeriodView: View {
     }
 }
 
-//MARK: -PeriodDetailView
-struct PeriodDetailView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Bindable var period: PeriodModel
-    
-    var body: some View {
-        Form {
-            Stepper("Start minute: \(period.startMinute)",
-                    value: $period.startMinute,
-                    in: 0...1435,
-                    step: 5)
-            Stepper("Duration: \(period.durationMinutes) min",
-                    value: $period.durationMinutes,
-                    in: 1...180)
-        }
-        .navigationTitle("Period \(period.index + 1)")
-        .onDisappear { try? modelContext.save() }
-    }
-}
+// PeriodDetailView removed
 
 
 //MARK: -EditSubjectListView
@@ -728,6 +794,28 @@ struct EditSubjectListView: View {
                     Label("Add Subject", systemImage: "plus")
                 }
             }
+            ToolbarItem {
+                Menu {
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "qrcode.viewfinder")
+                        Text("Scan To Add")
+                    }
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                        Text("Share by QR Code")
+                    }
+                } label: {
+                    Label("More", systemImage: "ellipsis.circle.fill")
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .clipShape(Circle())
+                }
+            }
         }
         .sheet(isPresented: $showAddSubject) {
             AddSubjectView(isPresented: $showAddSubject)
@@ -757,11 +845,18 @@ struct AddSubjectView: View {
                 Spacer()
                 Button {
                     guard !name.isEmpty else { return }
+                    // Build Teacher entities from entered names
+                    let teacherNames = teachersText
+                        .split(separator: ",")
+                        .map { $0.trimmingCharacters(in: .whitespaces) }
+                    let teacherEntities = teacherNames.map { name in
+                        let t = Teacher(name: name)
+                        modelContext.insert(t)
+                        return t
+                    }
                     let newSubject = SubjectModel(
                         name: name,
-                        teachersForSubject: teachersText
-                            .split(separator: ",")
-                            .map { $0.trimmingCharacters(in: .whitespaces) },
+                        teachersForSubject: teacherEntities,
                         color: color
                     )
                     modelContext.insert(newSubject)
@@ -778,14 +873,17 @@ struct AddSubjectView: View {
                         .padding()
                 }
             }
+            .padding()
             Form {
                 TextField("Name", text: $name)
                 TextField("Teachers (comma separated)", text: $teachersText)
                 ColorPicker("Color", selection: $color)
             }
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
             Spacer()
         }
-        .padding()
+        .background(Color.gray.opacity(0.1))
     }
 }
 
@@ -794,22 +892,29 @@ struct SubjectDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var subject: SubjectModel
     @State private var teachersText: String
-    
+
     init(subject: SubjectModel) {
         self.subject = subject
         _teachersText = State(initialValue:
             subject.teachersForSubject?
+                .map { $0.name }
                 .joined(separator: ", ") ?? "")
     }
-    
+
     var body: some View {
         Form {
             TextField("Name", text: $subject.name)
             TextField("Teachers (comma separated)", text: $teachersText)
                 .onChange(of: teachersText) {
-                    subject.teachersForSubject = teachersText
+                    let names = teachersText
                         .split(separator: ",")
                         .map { $0.trimmingCharacters(in: .whitespaces) }
+                    let teacherEntities = names.map { name in
+                        let t = Teacher(name: name)
+                        modelContext.insert(t)
+                        return t
+                    }
+                    subject.teachersForSubject = teacherEntities
                 }
             ColorPicker("Color", selection: $subject.color)
         }

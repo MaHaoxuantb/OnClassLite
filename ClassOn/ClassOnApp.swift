@@ -19,8 +19,13 @@ struct ClassOnApp: App {
             CommonDaysModel.self,
             CategoriesModel.self,
             CommonClass.self,
+            SubjectModel.self,
+            PeriodModel.self,
             Event.self,
             EventAlarms.self,
+            Teacher.self,
+            ClassTag.self,
+            EventTag.self,
         ])
 
         do {

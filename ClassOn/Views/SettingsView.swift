@@ -27,7 +27,7 @@ struct SettingsView: View {
                             Text("UserName:")
                                 .font(.subheadline)
                                 .padding(2)
-                            Text("ThomasB(TestAdmin)")
+                            Text("Admin(TestAdmin)")
                                 .font(.headline)
                                 .padding(3)
                         }
@@ -62,6 +62,7 @@ struct SettingsView: View {
                         Toggle(isOn: $UseBackgroundImages) {
                             Text("Use background images")
                         }
+                        Text("This APP is now Beta version.")
                     }
                 }
             }

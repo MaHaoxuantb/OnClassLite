@@ -48,8 +48,13 @@ final class CommonClass {
     var descriptions: String?
     var details: String?
     
-    var teacherForClass: String?
-    var teachersForSubject: [String]? //It's possible that one class has two teachers.
+    @Relationship(deleteRule: .cascade)
+        var teacherForClass: Teacher?
+    @Relationship(deleteRule: .cascade)
+        var teachersForSubject: [Teacher]? //It's possible that one class has two teachers.
+    
+    @Relationship(deleteRule: .cascade)
+        var tags: [ClassTag]?
     
     var colorHex: String
     var color: Color {
@@ -67,8 +72,9 @@ final class CommonClass {
         durationMinutes: Int,
         description: String? = nil,
         details: String? = nil,
-        teacherForClass: String? = nil,
-        teachersForSubject: [String]? = nil,
+        teacherForClass: Teacher? = nil,
+        teachersForSubject: [Teacher]? = nil,
+        tags: [ClassTag]? = nil,
         color: Color = .accentColor,
         parentDay: CommonDaysModel? = nil
     ) {
@@ -81,8 +87,25 @@ final class CommonClass {
         self.details = details
         self.teacherForClass = teacherForClass
         self.teachersForSubject = teachersForSubject
+        self.tags = tags
         self.colorHex = color.toHex()
         self.parentDay = parentDay
+    }
+}
+
+@Model
+final class ClassTag {
+    @Attribute(.unique) var name: String
+    init(name: String) {
+        self.name = name
+    }
+}
+
+@Model
+final class Teacher {
+    @Attribute(.unique) var name: String
+    init(name: String) {
+        self.name = name
     }
 }
 
@@ -92,7 +115,7 @@ final class SubjectModel {
     @Attribute(.unique)
         var id: UUID = UUID()
     var name: String
-    var teachersForSubject: [String]?
+    var teachersForSubject: [Teacher]?
     
     var colorHex: String
     var color: Color {
@@ -103,7 +126,7 @@ final class SubjectModel {
     init(
         id: UUID = UUID(),
         name: String,
-        teachersForSubject: [String]? = nil,
+        teachersForSubject: [Teacher]? = nil,
         color: Color = .accentColor,
     ) {
         self.id = id
@@ -222,6 +245,9 @@ final class Event {
     
     var descriptions: String?
     var details: String?
+    
+    var tags: [EventTag]?
+    
     /// Stored as "#RRGGBB"
     var colorHex: String
     var color: Color {
@@ -250,6 +276,8 @@ final class Event {
         description: String? = nil,
         details: String?,
         
+        tags: [EventTag]? = nil,
+        
         color: Color = .accentColor,
         
         isReminder: Bool,
@@ -270,12 +298,23 @@ final class Event {
         
         self.descriptions = description
         self.details = details
+        
+        self.tags = tags
+        
         self.colorHex = color.toHex()
         
         self.isReminder = isReminder
         self.reminderFinished = reminderFinished
         
         self.parentCategory = parentCategory
+    }
+}
+
+@Model
+final class EventTag {
+    @Attribute(.unique) var name: String
+    init(name: String) {
+        self.name = name
     }
 }
 

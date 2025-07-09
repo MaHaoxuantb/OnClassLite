@@ -32,6 +32,20 @@ struct ContentView: View {
                     Label("Home", systemImage: "house")
                 }
             EditView()
+                .modelContainer(
+                    for: [
+                        CommonDaysModel.self,
+                        CategoriesModel.self,
+                        CommonClass.self,
+                        SubjectModel.self,
+                        PeriodModel.self,
+                        Event.self,
+                        EventAlarms.self,
+                        Teacher.self,
+                        ClassTag.self,
+                        EventTag.self,
+                    ]
+                )
                 .tag(Tab.edit)
                 .tabItem {
                     Label("Edit", systemImage: "square.and.pencil")
@@ -60,6 +74,7 @@ struct ContentView: View {
 
         if existingDays?.count ?? 0 < 7 {
             var counter = 0 //Use counter to assign a number to order it
+            print("Start creating 7 days")
             if oneWeekStartWith == 0 { //Start Monday
                 for day in SevenDay.allCases {
                     // Determine common day flag based on index
@@ -103,5 +118,5 @@ struct HomeView: View {
     // Simulate first launch
     UserDefaults.standard.set(true, forKey: "TheFirstTimeUsingApp")
     return ContentView()
-        .modelContainer(for: CommonDaysModel.self, inMemory: true)
+        .modelContainer(for: CommonDaysModel.self)
 }
