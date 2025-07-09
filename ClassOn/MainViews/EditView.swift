@@ -26,7 +26,7 @@ struct EditView: View {
                 Section(header: Text("Common Days")) {
                     ForEach(CommonDays) { CommonDay in
                         NavigationLink {
-                            ClassInCommonDaysView(day: "\(CommonDay.day)", commonDayClasses: CommonDay.commonClasses) //CommonDay.day is not string so need to be converted
+                            ClassInCommonDaysView(commonDay: CommonDay)
                         } label: {
                             Text("\(CommonDay.day)")
                                 .font(.headline)
@@ -38,8 +38,13 @@ struct EditView: View {
                         NavigationLink {
                             EventsInCategoryView(categoryName: Category.name, eventsInCategory: Category.events)
                         } label: {
-                            Text("\(Category.name)")
-                                .font(.headline)
+                            HStack {
+                                Circle()
+                                    .fill(Category.color)
+                                    .frame(width: 10, height: 10)
+                                Text(Category.name)
+                                    .font(.headline)
+                            }
                         }
                     }
                     .onMove(perform: moveItems)
@@ -95,35 +100,147 @@ struct EditView: View {
 
 //MARK: -ClassInCommonDaysView
 struct ClassInCommonDaysView: View {
-    var day: String
-    var commonDayClasses: [CommonClass]
-    
+    @Environment(\.modelContext) private var modelContext
+    @Bindable var commonDay: CommonDaysModel
+
+    @State private var showAddClassView = false
+
     var body: some View {
         List {
-            ForEach(commonDayClasses) { commonClass in
+            ForEach(commonDay.commonClasses) { commonClass in
                 NavigationLink {
-                    Text("day: \(commonClass.name)")
-                } label: {
                     Text("\(commonClass.name)")
-                        .font(.headline)
+                } label: {
+                    HStack {
+                        Circle()
+                            .fill(commonClass.color)
+                            .frame(width: 10, height: 10)
+                        Text(commonClass.name)
+                            .font(.headline)
+                        Spacer()
+                        Text(String(format: "%02d:%02d",
+                                    commonClass.startMinute / 60,
+                                    commonClass.startMinute % 60))
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
                 }
             }
         }
-        .navigationTitle(Text("\(day)"))
+        .navigationTitle(Text("\(commonDay.day.rawValue)"))
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 EditButton()
             }
             ToolbarItem {
                 Button {
+                    showAddClassView.toggle()
                     HapticsManager.shared.playHapticFeedback()
                 } label: {
-                    Label("Add Category", systemImage: "plus")
+                    Label("Add Class", systemImage: "plus")
                 }
             }
         }
+        .sheet(isPresented: $showAddClassView) {
+            AddCommonClassView(commonDay: commonDay,
+                               isPresented: $showAddClassView)
+        }
         .onAppear {
             HapticsManager.shared.playHapticFeedback()
+        }
+    }
+}
+
+//MARK: -AddCommonClassView
+struct AddCommonClassView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Bindable var commonDay: CommonDaysModel
+    @Binding var isPresented: Bool
+
+    @State private var name: String = ""
+    @State private var selectedPeriodIndex: Int = 0
+    @State private var color: Color = .accentColor
+
+    var body: some View {
+        VStack {
+            // Header
+            HStack {
+                Text("New Class")
+                    .font(.headline)
+                    .padding()
+                Spacer()
+                Button {
+                    guard !name.isEmpty else { return }
+
+                    let startMinute = SchoolSchedule.periodStartMinutes[selectedPeriodIndex]
+                    let duration = SchoolSchedule.periodDurationMinutes[selectedPeriodIndex]
+
+                    let newClass = CommonClass(
+                        name: name,
+                        isCommonClass: true,
+                        startMinute: startMinute,
+                        durationMinutes: duration,
+                        color: color,
+                        parentDay: commonDay
+                    )
+
+                    // attach to parent & persist
+                    commonDay.commonClasses.append(newClass)
+                    modelContext.insert(newClass)
+                    do { try modelContext.save() } catch {
+                        print("Failed to save new class: \(error)")
+                    }
+
+                    isPresented = false
+                    HapticsManager.shared.playHapticFeedback()
+                } label: {
+                    Image(systemName: "checkmark.circle.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .foregroundStyle(name.isEmpty ? Color.gray.opacity(0.1) : Color.gray)
+                        .padding()
+                }
+            }
+
+            // Form
+            VStack(spacing: 16) {
+                TextField("Name", text: $name)
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .foregroundStyle(.regularMaterial)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.gray, lineWidth: 0.2)
+                    )
+
+                Picker("Period", selection: $selectedPeriodIndex) {
+                    ForEach(SchoolSchedule.periodStartMinutes.indices, id: \.self) { index in
+                        let start = SchoolSchedule.periodStartMinutes[index]
+                        let hour = start / 60
+                        let minute = start % 60
+                        Text("Period \(index + 1) – \(String(format: "%02d:%02d", hour, minute))")
+                            .tag(index)
+                    }
+                }
+                .pickerStyle(.wheel)
+                .frame(maxHeight: 150)
+
+                ColorPicker("Color", selection: $color)
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 20)
+                            .foregroundStyle(.regularMaterial)
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.gray, lineWidth: 0.2)
+                    )
+            }
+            .padding()
+
+            Spacer()
         }
     }
 }
