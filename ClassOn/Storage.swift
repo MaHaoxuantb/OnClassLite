@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftData
+import SwiftUI //This is for storing colors
 
 //MARK: -Common days & Classes
 enum SevenDay: String, CaseIterable, Codable {
@@ -57,12 +58,22 @@ final class CategoriesModel {
     @Attribute(.unique)
         var id: UUID = UUID()
     var name: String
+    var descriptions: String?
+    var details: String?
+    var colorHex: String
+    var color: Color {
+        get { Color(hex: colorHex) }
+        set { colorHex = newValue.toHex() }
+    }
     @Relationship(deleteRule: .cascade)
         var events = [Event]()
     
-    init(id: UUID = UUID(), name: String, events: [Event] = []) {
+    init(id: UUID = UUID(), name: String, description: String? = nil, details: String?, color: Color = .accentColor, events: [Event] = []) {
         self.id = id
         self.name = name
+        self.descriptions = description
+        self.details = details
+        self.colorHex = color.toHex()
         self.events = events
     }
 }
@@ -78,9 +89,15 @@ final class Event {
     var needLoop: Bool //If an event is a class, it need to be loop for every 7 days
     var descriptions: String?
     var details: String?
+    /// Stored as "#RRGGBB"
+    var colorHex: String
+    var color: Color {
+        get { Color(hex: colorHex) }
+        set { colorHex = newValue.toHex() }
+    }
     var parentCategory: CategoriesModel?
     
-    init(id: UUID = UUID(), name: String, date: Date, time: Int, needLoop: Bool, description: String? = nil, details: String?, parentCategory: CategoriesModel? = nil) {
+    init(id: UUID = UUID(), name: String, date: Date, time: Int, needLoop: Bool, description: String? = nil, details: String?, color: Color = .accentColor, parentCategory: CategoriesModel? = nil) {
         self.id = id
         self.name = name
         self.date = date
@@ -88,6 +105,7 @@ final class Event {
         self.needLoop = needLoop
         self.descriptions = description
         self.details = details
+        self.colorHex = color.toHex()
         self.parentCategory = parentCategory
     }
 }

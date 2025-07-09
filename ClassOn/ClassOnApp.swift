@@ -26,7 +26,7 @@ struct ClassOnApp: App {
     
     var body: some Scene {
         WindowGroup {
-            EditView()
+            ContentView()
                 .environment(\.modelContext, sharedModelContainer.mainContext)
         }
         .modelContainer(sharedModelContainer)

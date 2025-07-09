@@ -8,33 +8,46 @@
 import SwiftUI
 import SwiftData
 
+enum Tab: Hashable {
+    case home, edit, settings
+}
+
 struct ContentView: View {
     //App Storage
-    @AppStorage("TheFirstTimeUsingApp") var isTheFirstTimeUsingApp: Bool = true
     
     //Models
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \CommonDaysModel.number) private var CommonDays: [CommonDaysModel]
     
     //State
+    @State private var selectedTab: Tab = .home
     @State private var isShowAddCategorySheet: Bool = false
     
     var body: some View {
-        TabView {
-            EditView()
-                .tabItem {
-                    Label("Edit", systemImage: "square.and.pencil")
-                }
+        TabView(selection: $selectedTab) {
             HomeView()
+                .tag(Tab.home)
                 .tabItem {
                     Label("Home", systemImage: "house")
                 }
+            EditView()
+                .tag(Tab.edit)
+                .tabItem {
+                    Label("Edit", systemImage: "square.and.pencil")
+                }
+            SettingsView()
+                .tag(Tab.settings)
+                .tabItem {
+                    Label("Settings", systemImage: "gearshape")
+                }
+        }
+        .onChange(of: selectedTab) {
+            HapticsManager.shared.playHapticFeedback()
         }
         //createDefaultDaysIfNeeded
         .onAppear {
-            if isTheFirstTimeUsingApp {
+            if CommonDays.count < 7 {
                 createDefaultDaysIfNeeded(modelContext: modelContext)
-                isTheFirstTimeUsingApp = false
             }
         }
     }
