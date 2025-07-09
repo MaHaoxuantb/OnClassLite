@@ -14,6 +14,7 @@ enum Tab: Hashable {
 
 struct ContentView: View {
     //App Storage
+    @AppStorage("oneWeekStartWith") var oneWeekStartWith: Int = 0 //start with monday(0) by default
     
     //Models
     @Environment(\.modelContext) private var modelContext
@@ -59,13 +60,30 @@ struct ContentView: View {
 
         if existingDays?.count ?? 0 < 7 {
             var counter = 0 //Use counter to assign a number to order it
-            for day in SevenDay.allCases {
-                let newDay = CommonDaysModel(
-                    number: counter,
-                    day: day,
-                )
-                modelContext.insert(newDay)
-                counter += 1
+            if oneWeekStartWith == 0 { //Start Monday
+                for day in SevenDay.allCases {
+                    // Determine common day flag based on index
+                    let newDay: CommonDaysModel
+                    if counter == 5 || counter == 6 {   //if not common day
+                        newDay = CommonDaysModel(number: counter, day: day, isCommonDay: false)
+                    } else {
+                        newDay = CommonDaysModel(number: counter, day: day, isCommonDay: true)
+                    }
+                    modelContext.insert(newDay)
+                    counter += 1
+                }
+            } else if oneWeekStartWith == 6 {
+                for day in SevenDay.allCases {
+                    // Determine common day flag based on index
+                    let newDay: CommonDaysModel
+                    if counter == 4 || counter == 5 {   //if not common day
+                        newDay = CommonDaysModel(number: counter, day: day, isCommonDay: false)
+                    } else {
+                        newDay = CommonDaysModel(number: counter, day: day, isCommonDay: true)
+                    }
+                    modelContext.insert(newDay)
+                    counter += 1
+                }
             }
             try? modelContext.save()
         }

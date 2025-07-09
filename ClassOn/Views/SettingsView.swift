@@ -11,6 +11,9 @@ struct SettingsView: View {
     @AppStorage("InDebugMode") var InDebugMode: Bool = true
     @AppStorage("UseBackgroundImages") var UseBackgroundImages: Bool = false
     
+    @AppStorage("OnVacation") var OnVacation: Bool = false
+    @AppStorage("oneWeekStartWith") var oneWeekStartWith: Int = 0 //start with monday(0) by default
+    
     var body: some View {
         NavigationStack {
             List {
@@ -34,6 +37,15 @@ struct SettingsView: View {
                         )
                     }
                 }
+                Section(header: Text("Functions")) {
+                    Picker("Start of the week", selection: $oneWeekStartWith) {
+                        Text("Monday").tag(0)
+                        Text("Sunday").tag(6)
+                    }
+                    Toggle(isOn: $OnVacation) {
+                        Text("On Vacation!!!")
+                    }
+                }
                 Section(header: Text("App")) {
                     NavigationLink(destination: AboutView()) {
                         Text("About")
@@ -42,7 +54,7 @@ struct SettingsView: View {
                         Text("Third Party Usages")
                     }
                     NavigationLink(destination: LicenseView()) {
-                        Text("App Licenses")
+                        Text("App Licenses & Agreements")
                     }
                 }
                 if InDebugMode {

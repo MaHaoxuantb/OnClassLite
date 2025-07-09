@@ -18,8 +18,14 @@ struct ClassOnApp: App {
         let schema = Schema([
             CommonDaysModel.self,
             CategoriesModel.self,
+            CommonClass.self,
+            Event.self,
+            EventAlarms.self,
         ])
-        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
+        let modelConfiguration = ModelConfiguration(
+            schema: schema,
+            isStoredInMemoryOnly: false
+        )
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])

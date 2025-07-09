@@ -25,18 +25,17 @@ struct EditView: View {
                 Section(header: Text("Common Days")) {
                     ForEach(CommonDays) { CommonDay in
                         NavigationLink {
-                            ClassInCommonDaysView(day: "\(CommonDay.day)", commonDayClasses: CommonDay.commonClasses)
+                            ClassInCommonDaysView(day: "\(CommonDay.day)", commonDayClasses: CommonDay.commonClasses) //CommonDay.day is not string so need to be converted
                         } label: {
                             Text("\(CommonDay.day)")
                                 .font(.headline)
                         }
                     }
-                    
                 }
                 Section(header: Text("Category")) {
                     ForEach(Categories) { Category in
                         NavigationLink {
-                            Text("Item at \(Category.name)")
+                            EventsInCategoryView(categoryName: Category.name, eventsInCategory: Category.events)
                         } label: {
                             Text("\(Category.name)")
                                 .font(.headline)
@@ -147,6 +146,7 @@ struct EventsInCategoryView: View {
         }
     }
 }
+
 
 //MARK: -AddCategoryView
 struct AddCategoryView: View {
