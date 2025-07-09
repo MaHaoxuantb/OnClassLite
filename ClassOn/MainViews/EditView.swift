@@ -23,6 +23,18 @@ struct EditView: View {
     var body: some View {
         NavigationSplitView {
             List {
+                Section(header: Text("Settings")) {
+                    NavigationLink {
+                        
+                    } label: {
+                        Text("Edit TimeTable")
+                    }
+                    NavigationLink {
+                        
+                    } label: {
+                        Text("Edit Classes")
+                    }
+                }
                 Section(header: Text("Common Days")) {
                     ForEach(CommonDays) { CommonDay in
                         NavigationLink {
@@ -125,6 +137,21 @@ struct ClassInCommonDaysView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+                //Card-Like style
+                .listRowSeparator(.hidden)
+                .listRowBackground(
+                    RoundedRectangle(cornerRadius: 12)
+                        .background(.clear)
+                        .foregroundStyle(.regularMaterial)
+                        .padding(
+                            EdgeInsets(
+                                top: 2,
+                                leading: 10,
+                                bottom: 2,
+                                trailing: 10
+                            )
+                        )
+                )
             }
         }
         .navigationTitle(Text("\(commonDay.day.rawValue)"))

@@ -86,6 +86,32 @@ final class CommonClass {
     }
 }
 
+//MARK: Subjects
+final class SubjectModel {
+    @Attribute(.unique)
+        var id: UUID = UUID()
+    var name: String
+    var teachersForSubject: [String]?
+    
+    var colorHex: String
+    var color: Color {
+        get { Color(hex: colorHex) }
+        set { colorHex = newValue.toHex() }
+    }
+    
+    init(
+        id: UUID = UUID(),
+        name: String,
+        teachersForSubject: [String]? = nil,
+        color: Color = .accentColor,
+    ) {
+        self.id = id
+        self.name = name
+        self.teachersForSubject = teachersForSubject
+        self.colorHex = color.toHex()
+    }
+}
+
 // MARK: - SchoolSchedule
 struct SchoolSchedule {
     /// Default period start times in minutes since midnight.
