@@ -19,13 +19,13 @@ enum SevenDay: String, CaseIterable, Codable {
 final class CommonDaysModel {
     @Attribute(.unique)
         var id: UUID = UUID()
-    var number: Int = 0 //Use counter to assign a number to order it
+    var number: Int //Use counter to assign a number to order it, started at 0 for Monday
     var day: SevenDay
     var isCommonDay: Bool //If it's commonDay, should follow the timetable
     @Relationship(deleteRule: .cascade)
         var commonClasses = [CommonClass]()
     
-    init(id: UUID = UUID(), number: Int = 0, day: SevenDay, isCommonDay: Bool, commonClasses: [CommonClass] = []) {
+    init(id: UUID = UUID(), number: Int, day: SevenDay, isCommonDay: Bool, commonClasses: [CommonClass] = []) {
         self.id = id
         self.number = number
         self.day = day
@@ -41,12 +41,12 @@ final class CommonClass {
         var id: UUID = UUID()
     var name: String
     var isCommonClass: Bool
-    var time: Int
+    var time: Date
     var descriptions: String?
     var details: String?
     var parentDay: CommonDaysModel?
     
-    init(id: UUID = UUID(), name: String, isCommonClass: Bool, time: Int, description: String? = nil, details: String?, parentDay: CommonDaysModel? = nil) {
+    init(id: UUID = UUID(), name: String, isCommonClass: Bool, time: Date, description: String? = nil, details: String?, parentDay: CommonDaysModel? = nil) {
         self.id = id
         self.name = name
         self.isCommonClass = isCommonClass
@@ -63,6 +63,7 @@ final class CategoriesModel {
     @Attribute(.unique)
         var id: UUID = UUID()
     var name: String
+    var sortIndex: Int  // <- This is used for sorting
     var descriptions: String?
     var details: String?
     var colorHex: String
@@ -73,9 +74,10 @@ final class CategoriesModel {
     @Relationship(deleteRule: .cascade)
         var events = [Event]()
     
-    init(id: UUID = UUID(), name: String, description: String? = nil, details: String?, color: Color = .accentColor, events: [Event] = []) {
+    init(id: UUID = UUID(), name: String, sortIndex: Int, description: String? = nil, details: String?, color: Color = .accentColor, events: [Event] = []) {
         self.id = id
         self.name = name
+        self.sortIndex = sortIndex
         self.descriptions = description
         self.details = details
         self.colorHex = color.toHex()
@@ -90,10 +92,9 @@ final class Event {
         var id: UUID = UUID()
     var name: String
     
-    var date: Date
+    var date: Date //If full day, store the timeStamp for 00:00
     var isAllDay: Bool = false
-    var StartTime: Int
-    var EndTime: Int?
+    var duration: Int? //min
     var needLoop: Bool
     
     var createdAt: Date = Date()
@@ -108,19 +109,52 @@ final class Event {
         set { colorHex = newValue.toHex() }
     }
     
+    var isReminder: Bool = false
+    var reminderFinished: Bool = false
+    
     var parentCategory: CategoriesModel?
     @Relationship(deleteRule: .cascade)
         var alarms: [EventAlarms]? = []
     
-    init(id: UUID = UUID(), name: String, date: Date, StartTime: Int, needLoop: Bool, description: String? = nil, details: String?, color: Color = .accentColor, parentCategory: CategoriesModel? = nil, alarms: [EventAlarms]? = nil) {
+    init(
+        id: UUID = UUID(),
+        name: String,
+        
+        date: Date,
+        duration: Int,
+        needLoop: Bool,
+        
+        createAt: Date = Date(),
+        updatedAt: Date = Date(),
+        
+        description: String? = nil,
+        details: String?,
+        
+        color: Color = .accentColor,
+        
+        isReminder: Bool,
+        reminderFinished: Bool,
+        
+        parentCategory: CategoriesModel? = nil,
+        alarms: [EventAlarms]? = nil
+    ) {
         self.id = id
         self.name = name
+        
         self.date = date
-        self.StartTime = StartTime
+        self.duration = duration
         self.needLoop = needLoop
+        
+        self.createdAt = createAt
+        self.updatedAt = updatedAt
+        
         self.descriptions = description
         self.details = details
         self.colorHex = color.toHex()
+        
+        self.isReminder = isReminder
+        self.reminderFinished = reminderFinished
+        
         self.parentCategory = parentCategory
     }
 }

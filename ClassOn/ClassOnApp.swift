@@ -22,13 +22,14 @@ struct ClassOnApp: App {
             Event.self,
             EventAlarms.self,
         ])
-        let modelConfiguration = ModelConfiguration(
-            schema: schema,
-            isStoredInMemoryOnly: false
-        )
 
         do {
-            return try ModelContainer(for: schema, configurations: [modelConfiguration])
+            if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
+                let config = ModelConfiguration(isStoredInMemoryOnly: true)
+                return try ModelContainer(for: schema, configurations: [config])
+            } else {
+                return try ModelContainer(for: schema)
+            }
         } catch {
             fatalError("Could not create ModelContainer: \(error)")
         }

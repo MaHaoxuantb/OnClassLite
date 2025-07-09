@@ -14,7 +14,7 @@ struct EditView: View {
     //Models
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \CommonDaysModel.number) private var CommonDays: [CommonDaysModel]
-    @Query private var Categories: [CategoriesModel]
+    @Query(sort: \CategoriesModel.sortIndex) private var Categories: [CategoriesModel]
     
     //State of Views
     @State private var ShowAddCategoryView: Bool = false
@@ -41,6 +41,7 @@ struct EditView: View {
                                 .font(.headline)
                         }
                     }
+                    .onMove(perform: moveItems)
                     .onDelete(perform: deleteCategory)
                 }
             }
@@ -73,6 +74,20 @@ struct EditView: View {
             for index in offsets {
                 modelContext.delete(Categories[index])
             }
+        }
+    }
+    
+    func moveItems(from source: IndexSet, to destination: Int) {
+        var revisedItems = Categories
+          revisedItems.move(fromOffsets: source, toOffset: destination)
+        
+        for (index, item) in revisedItems.enumerated() {
+            item.sortIndex = index
+        }
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to save category order: (error)")
         }
     }
 }
@@ -158,6 +173,7 @@ struct AddCategoryView: View {
     @State private var color: Color = .blue
     
     @Binding var ViewIsPresent: Bool
+    @Query private var Categories: [CategoriesModel]
     
     var body: some View {
         VStack {
@@ -169,8 +185,10 @@ struct AddCategoryView: View {
                 Spacer()
                 Button() {
                     if !name.isEmpty {
+                        let newIndex = Categories.count
                         let newCategory = CategoriesModel(
                             name: name,
+                            sortIndex: newIndex,
                             description: description,
                             details: details,
                             color: color
