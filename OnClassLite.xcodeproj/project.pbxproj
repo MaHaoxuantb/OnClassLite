@@ -7,16 +7,16 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		A973F4C32E1D0A8F001491B3 /* OnClass.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OnClass.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A973F4C32E1D0A8F001491B3 /* OnClassLite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OnClassLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		A973F4D02E1D0A8F001491B3 /* Exceptions for "ClassOn" folder in "OnClass" target */ = {
+		A973F4D02E1D0A8F001491B3 /* Exceptions for "ClassOn" folder in "OnClassLite" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = A973F4C22E1D0A8F001491B3 /* OnClass */;
+			target = A973F4C22E1D0A8F001491B3 /* OnClassLite */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -24,7 +24,7 @@
 		A973F4C52E1D0A8F001491B3 /* ClassOn */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				A973F4D02E1D0A8F001491B3 /* Exceptions for "ClassOn" folder in "OnClass" target */,
+				A973F4D02E1D0A8F001491B3 /* Exceptions for "ClassOn" folder in "OnClassLite" target */,
 			);
 			path = ClassOn;
 			sourceTree = "<group>";
@@ -53,7 +53,7 @@
 		A973F4C42E1D0A8F001491B3 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				A973F4C32E1D0A8F001491B3 /* OnClass.app */,
+				A973F4C32E1D0A8F001491B3 /* OnClassLite.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,9 +61,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		A973F4C22E1D0A8F001491B3 /* OnClass */ = {
+		A973F4C22E1D0A8F001491B3 /* OnClassLite */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = A973F4D12E1D0A8F001491B3 /* Build configuration list for PBXNativeTarget "OnClass" */;
+			buildConfigurationList = A973F4D12E1D0A8F001491B3 /* Build configuration list for PBXNativeTarget "OnClassLite" */;
 			buildPhases = (
 				A973F4BF2E1D0A8F001491B3 /* Sources */,
 				A973F4C02E1D0A8F001491B3 /* Frameworks */,
@@ -76,11 +76,11 @@
 			fileSystemSynchronizedGroups = (
 				A973F4C52E1D0A8F001491B3 /* ClassOn */,
 			);
-			name = OnClass;
+			name = OnClassLite;
 			packageProductDependencies = (
 			);
 			productName = ClassOn;
-			productReference = A973F4C32E1D0A8F001491B3 /* OnClass.app */;
+			productReference = A973F4C32E1D0A8F001491B3 /* OnClassLite.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
@@ -98,7 +98,7 @@
 					};
 				};
 			};
-			buildConfigurationList = A973F4BE2E1D0A8F001491B3 /* Build configuration list for PBXProject "OnClass" */;
+			buildConfigurationList = A973F4BE2E1D0A8F001491B3 /* Build configuration list for PBXProject "OnClassLite" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -112,7 +112,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				A973F4C22E1D0A8F001491B3 /* OnClass */,
+				A973F4C22E1D0A8F001491B3 /* OnClassLite */,
 			);
 		};
 /* End PBXProject section */
@@ -328,7 +328,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		A973F4BE2E1D0A8F001491B3 /* Build configuration list for PBXProject "OnClass" */ = {
+		A973F4BE2E1D0A8F001491B3 /* Build configuration list for PBXProject "OnClassLite" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A973F4D42E1D0A8F001491B3 /* Debug */,
@@ -337,7 +337,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		A973F4D12E1D0A8F001491B3 /* Build configuration list for PBXNativeTarget "OnClass" */ = {
+		A973F4D12E1D0A8F001491B3 /* Build configuration list for PBXNativeTarget "OnClassLite" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				A973F4D22E1D0A8F001491B3 /* Debug */,
