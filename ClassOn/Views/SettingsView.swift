@@ -56,6 +56,9 @@ struct SettingsView: View {
                     NavigationLink(destination: LicenseView()) {
                         Text("App Licenses & Agreements")
                     }
+                    NavigationLink(destination: ExportAllView()) {
+                        Text("Export Data")
+                    }
                 }
                 if InDebugMode {
                     Section(header: Text("Debug Only")) {
@@ -184,6 +187,13 @@ struct ThirdPartiesView: View {
             .padding(.horizontal, 8)
         }
         .navigationTitle("Third Party Usages")
+    }
+}
+
+struct ExportAllView: View {
+    var body: some View {
+        Text("Export All")
+            .navigationTitle(Text("Export All"))
     }
 }
 
