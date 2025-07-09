@@ -48,6 +48,9 @@ final class CommonClass {
     var descriptions: String?
     var details: String?
     
+    var teacherForClass: String?
+    var teachersForSubject: [String]? //It's possible that one class has two teachers.
+    
     var colorHex: String
     var color: Color {
         get { Color(hex: colorHex) }
@@ -64,6 +67,8 @@ final class CommonClass {
         durationMinutes: Int,
         description: String? = nil,
         details: String? = nil,
+        teacherForClass: String? = nil,
+        teachersForSubject: [String]? = nil,
         color: Color = .accentColor,
         parentDay: CommonDaysModel? = nil
     ) {
@@ -74,6 +79,8 @@ final class CommonClass {
         self.durationMinutes = durationMinutes
         self.descriptions = description
         self.details = details
+        self.teacherForClass = teacherForClass
+        self.teachersForSubject = teachersForSubject
         self.colorHex = color.toHex()
         self.parentDay = parentDay
     }
