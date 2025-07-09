@@ -51,7 +51,7 @@ struct EditView: View {
                     .onDelete(perform: deleteCategory)
                 }
             }
-            .navigationTitle(Text("Edit"))
+            .navigationTitle(Text("Shedule"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     EditButton()
