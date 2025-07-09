@@ -40,22 +40,67 @@ final class CommonClass {
     @Attribute(.unique)
         var id: UUID = UUID()
     var name: String
+    
     var isCommonClass: Bool
-    var time: Date
+    var startMinute: Int
+    /// Duration of the period in minutes.
+    var durationMinutes: Int
     var descriptions: String?
     var details: String?
+    
+    var colorHex: String
+    var color: Color {
+        get { Color(hex: colorHex) }
+        set { colorHex = newValue.toHex() }
+    }
+    
     var parentDay: CommonDaysModel?
     
-    init(id: UUID = UUID(), name: String, isCommonClass: Bool, time: Date, description: String? = nil, details: String?, parentDay: CommonDaysModel? = nil) {
+    init(
+        id: UUID = UUID(),
+        name: String,
+        isCommonClass: Bool,
+        startMinute: Int,
+        durationMinutes: Int,
+        description: String? = nil,
+        details: String? = nil,
+        color: Color = .accentColor,
+        parentDay: CommonDaysModel? = nil
+    ) {
         self.id = id
         self.name = name
         self.isCommonClass = isCommonClass
-        self.time = time
+        self.startMinute = startMinute
+        self.durationMinutes = durationMinutes
         self.descriptions = description
         self.details = details
+        self.colorHex = color.toHex()
         self.parentDay = parentDay
     }
 }
+
+// MARK: - SchoolSchedule
+struct SchoolSchedule {
+    /// Default period start times in minutes since midnight.
+    static let periodStartMinutes: [Int] = [
+        480,  // 8:00 AM
+        530,  // 8:50 AM
+        585,  // 9:45 AM
+        640,  // 10:40 AM
+        690,  // 11:30 AM
+        735,  // 12:15 PM
+        785,  // 1:05 PM
+        835,  // 1:55 PM
+        890,  // 2:50 PM
+        940,  // 3:40 PM
+        990   // 4:30 PM
+    ]
+    /// Default lesson durations in minutes (parallel to `periodStartMinutes`).
+    static let periodDurationMinutes: [Int] = [
+        45, 45, 45, 45, 45, 45, 45, 45, 45, 45, 45
+    ]
+}
+
 
 //MARK: -Other Categories
 @Model
@@ -174,5 +219,24 @@ final class EventAlarms {
         self.name = name
         self.date = date
         self.time = time
+    }
+}
+
+
+// MARK: - CommonClass Default Classes Extension
+extension CommonClass {
+    static func defaultClasses(for parentDay: CommonDaysModel?) -> [CommonClass] {
+        zip(SchoolSchedule.periodStartMinutes, SchoolSchedule.periodDurationMinutes)
+            .enumerated()
+            .map { index, pair in
+                let (minute, duration) = pair
+                return CommonClass(
+                    name: "Period \(index + 1)",
+                    isCommonClass: true,
+                    startMinute: minute,
+                    durationMinutes: duration,
+                    parentDay: parentDay
+                )
+            }
     }
 }
