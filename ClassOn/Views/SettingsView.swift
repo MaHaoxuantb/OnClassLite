@@ -61,13 +61,13 @@ struct SettingsView: View {
 struct LicenseView: View {
     var body: some View{
         List {
-            NavigationLink(destination: WebView(url: URL(string: "https://redirect.thomasb.top/?domain=license.mahaoxuan.top&path=UserAgreement.html&originService=ConiWords1")!)) {
+            NavigationLink(destination: WebView(url: URL(string: "https://redirect.linecoflow.com/?domain=license.mahaoxuan.top&path=UserAgreement.html&originService=ClassOn-iOS")!)) {
                 Text("General User Agreements")
             }
-            NavigationLink(destination: WebView(url: URL(string: "https://redirect.thomasb.top/?domain=license.mahaoxuan.top&path=PrivacyPolicy.html&originService=ConiWords1")!)) {
+            NavigationLink(destination: WebView(url: URL(string: "https://redirect.linecoflow.com/?domain=license.mahaoxuan.top&path=PrivacyPolicy.html&originService=ClassOn-iOS")!)) {
                 Text("General Privacy Policies")
             }
-            NavigationLink(destination: WebView(url: URL(string: "https://redirect.thomasb.top/?domain=license.mahaoxuan.top&path=ConiWords/ConiWords_UserAgreements_EN.html&originService=ConiWords1")!)) {
+            NavigationLink(destination: WebView(url: URL(string: "https://redirect.linecoflow.com/?domain=license.mahaoxuan.top&path=ConiWords/ConiWords_UserAgreements_EN.html&originService=ClassOn-iOS")!)) {
                 Text("APP User Agreements")
             }
         }
@@ -149,7 +149,7 @@ struct ThirdPartiesView: View {
         NavigationStack {
             List {
                 Section(header: Text("Open Source")) {
-                    NavigationLink(destination: WebView(url: URL(string: "https://github.com/gonzalezreal/swift-markdown-ui")!)) {
+                    NavigationLink(destination: WebView(url: URL(string: "https://redirect.linecoflow.com/?domain=github.com&path=gonzalezreal/swift-markdown-ui&originService=ClassOn-iOS")!)) {
                         Text("swift-markdown-ui")
                     }
                 }
@@ -168,7 +168,7 @@ struct ThirdPartiesView: View {
                     .font(.footnote)
                     .padding(0.2)
             }
-            .padding(.horizontal, 5)
+            .padding(.horizontal, 8)
         }
         .navigationTitle("Third Party Usages")
     }

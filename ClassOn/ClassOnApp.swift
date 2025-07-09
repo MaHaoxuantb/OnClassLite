@@ -10,6 +10,10 @@ import SwiftData
 
 @main
 struct ClassOnApp: App {
+    init() {
+        UITextView.appearance().backgroundColor = .clear
+    }
+    
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             CommonDaysModel.self,
