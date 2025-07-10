@@ -40,16 +40,16 @@ struct EditTimetableView: View {
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) { EditButton() }
             ToolbarItem {
-                Button {
-                    selectedPeriod = nil
-                    isShowingPeriodEditor = true
-                    HapticsManager.shared.playHapticFeedback()
-                } label: {
-                    Label("Add Period", systemImage: "plus")
-                }
-            }
-            ToolbarItem {
                 Menu {
+                    // Manually adding
+                    Button {
+                        selectedPeriod = nil
+                        isShowingPeriodEditor = true
+                    } label: {
+                        Image(systemName: "plus")
+                        Text("Add Period")
+                    }
+                    
                     Button {
                         
                     } label: {
