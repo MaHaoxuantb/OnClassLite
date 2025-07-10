@@ -8,6 +8,72 @@
 import SwiftUI
 import SwiftData
 
+//MARK: -EditSubjectListView
+struct EditSubjectListView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Query(sort: \SubjectModel.name) private var subjects: [SubjectModel]
+    @State private var showAddSubject = false
+    
+    var body: some View {
+        List {
+            ForEach(subjects) { subject in
+                NavigationLink {
+                    SubjectDetailView(subject: subject)
+                } label: {
+                    HStack {
+                        Circle().fill(subject.color).frame(width: 10, height: 10)
+                        Text(subject.name).font(.headline)
+                    }
+                }
+            }
+            .onDelete(perform: deleteSubjects)
+        }
+        .navigationTitle(Text("Subjects"))
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) { EditButton() }
+            ToolbarItem {
+                Button {
+                    showAddSubject.toggle()
+                    HapticsManager.shared.playHapticFeedback()
+                } label: {
+                    Label("Add Subject", systemImage: "plus")
+                }
+            }
+            ToolbarItem {
+                Menu {
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "qrcode.viewfinder")
+                        Text("Scan To Add")
+                    }
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "square.and.arrow.up")
+                        Text("Share by QR Code")
+                    }
+                } label: {
+                    Label("More", systemImage: "ellipsis.circle.fill")
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .clipShape(Circle())
+                }
+            }
+        }
+        .sheet(isPresented: $showAddSubject) {
+            AddSubjectView(isPresented: $showAddSubject)
+        }
+    }
+    
+    private func deleteSubjects(at offsets: IndexSet) {
+        withAnimation {
+            for idx in offsets { modelContext.delete(subjects[idx]) }
+        }
+    }
+}
+
 //MARK: -AddSubjectView
 struct AddSubjectView: View {
     @Environment(\.modelContext) private var modelContext
@@ -60,9 +126,15 @@ struct AddSubjectView: View {
             }
             .scrollContentBackground(.hidden)
             .background(Color.clear)
+            Form {
+                Text("Understand how this works.")
+            }
             Spacer()
         }
         .background(Color.gray.opacity(0.1))
+        .onAppear {
+            HapticsManager.shared.playHapticFeedback()
+        }
     }
 }
 
@@ -99,5 +171,8 @@ struct SubjectDetailView: View {
         }
         .navigationTitle(Text(subject.name))
         .onDisappear { try? modelContext.save() }
+        .onAppear {
+            HapticsManager.shared.playHapticFeedback()
+        }
     }
 }

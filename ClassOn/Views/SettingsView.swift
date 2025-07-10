@@ -83,6 +83,9 @@ struct SettingsView: View {
             }
         }
         .background(.regularMaterial)
+        .onAppear {
+            HapticsManager.shared.playHapticFeedback()
+        }
     }
 }
 

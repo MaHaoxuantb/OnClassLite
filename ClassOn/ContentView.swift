@@ -12,6 +12,8 @@ enum Tab: Hashable {
     case home, edit, settings
 }
 
+//MARK: -ContentView
+// Content view with TabView
 struct ContentView: View {
     //App Storage
     @AppStorage("oneWeekStartWith") var oneWeekStartWith: Int = 0 //start with monday(0) by default
@@ -67,6 +69,7 @@ struct ContentView: View {
             if CommonDays.count < 7 {
                 createDefaultDaysIfNeeded(modelContext: modelContext)
             }
+            HapticsManager.shared.prepareHaptics()
         }
     }
     

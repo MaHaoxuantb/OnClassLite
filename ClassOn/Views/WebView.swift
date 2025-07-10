@@ -40,8 +40,14 @@ struct WebViewContainer: View {
                 .navigationTitle("WebView")
                 .navigationBarTitleDisplayMode(.inline)
                 .ignoresSafeArea(.all)
+                .onAppear {
+                    HapticsManager.shared.playHapticFeedback()
+                }
         } else {
             Text("无效的 URL")
+                .onAppear {
+                    HapticsManager.shared.playHapticFeedback()
+                }
         }
     }
 }

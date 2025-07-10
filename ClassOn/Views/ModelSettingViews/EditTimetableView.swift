@@ -74,6 +74,9 @@ struct EditTimetableView: View {
         .sheet(isPresented: $isShowingPeriodEditor) {
             AddPeriodView(isPresented: $isShowingPeriodEditor, periodToEdit: selectedPeriod)
         }
+        .onAppear {
+            HapticsManager.shared.playHapticFeedback()
+        }
     }
     
     private func deletePeriod(at offsets: IndexSet) {
@@ -162,10 +165,23 @@ struct AddPeriodView: View {
                         value: $duration,
                         in: 1...180)
             }
+            .background(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.gray, style: StrokeStyle(lineWidth: 0.5))
+            )
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            .padding()
             Spacer()
         }
-        .padding()
+        .onAppear {
+            HapticsManager.shared.playHapticFeedback()
+        }
     }
 }
 
 // PeriodDetailView removed
+
+#Preview {
+    EditTimetableView()
+}
