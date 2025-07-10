@@ -146,5 +146,5 @@ private struct ClassCardView: View {
                   CommonClass.self,
                   SubjectModel.self,
                   PeriodModel.self],
-            inMemory: true)
+        )
 }

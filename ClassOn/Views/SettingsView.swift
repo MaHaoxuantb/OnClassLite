@@ -77,12 +77,18 @@ struct SettingsView: View {
                         Toggle(isOn: $UseBackgroundImages) {
                             Text("Use background images")
                         }
+                        NavigationLink(destination:
+                            StorageDebug()
+                        ) {
+                            Text("Storage Debug")
+                        }
                         Text("This APP is now Beta version.")
                     }
                 }
             }
         }
         .background(.regularMaterial)
+        .navigationTitle(Text("Settings"))
         .onAppear {
             HapticsManager.shared.playHapticFeedback()
         }

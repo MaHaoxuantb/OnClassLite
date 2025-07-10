@@ -34,20 +34,6 @@ struct ContentView: View {
                     Label("Home", systemImage: "house")
                 }
             EditView()
-                .modelContainer(
-                    for: [
-                        CommonDaysModel.self,
-                        CategoriesModel.self,
-                        CommonClass.self,
-                        SubjectModel.self,
-                        PeriodModel.self,
-                        Event.self,
-                        EventAlarms.self,
-                        Teacher.self,
-                        ClassTag.self,
-                        EventTag.self,
-                    ]
-                )
                 .tag(Tab.edit)
                 .tabItem {
                     Label("Edit", systemImage: "square.and.pencil")
