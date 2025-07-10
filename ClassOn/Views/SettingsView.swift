@@ -101,6 +101,9 @@ struct LicenseView: View {
             NavigationLink(destination: WebView(url: URL(string: "https://redirect.linecoflow.com/?domain=license.mahaoxuan.top&path=ConiWords/ConiWords_UserAgreements_EN.html&originService=ClassOn-iOS")!)) {
                 Text("APP User Agreements")
             }
+            NavigationLink(destination: WebView(url: URL(string: "https://redirect.linecoflow.com/?domain=license.mahaoxuan.top&path=LinecoFlow/LinecoFlow-AUAPP-PRC.html&originService=ClassOn-iOS")!)) {
+                Text("LinecoFlow-AUAPP-PRC")
+            }
         }
         .navigationTitle("App Licenses")
     }
@@ -135,7 +138,7 @@ struct AboutView: View {
                                 )
                                 .padding([.top, .leading, .bottom], 5)
                         }
-                        Text("ClassOn")
+                        Text("OnClassLite-Beta")
                             .font(.title)
                             .bold()
                             .background(
@@ -144,7 +147,7 @@ struct AboutView: View {
                             )
                             .padding([.top, .bottom, .trailing], 5)
                     }
-                    Text("Version 0.3")
+                    Text("Version 0.3, Build 071025A05")
                         .font(.subheadline)
                         .padding()
                     Spacer().frame(height: 60)
