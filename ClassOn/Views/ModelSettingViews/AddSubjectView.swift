@@ -156,17 +156,20 @@ struct EditSubjectListView: View {
         }
         .navigationTitle(Text("Subjects"))
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) { EditButton() }
-            ToolbarItem {
-                Button {
-                    showAddSubject.toggle()
-                    HapticsManager.shared.playHapticFeedback()
-                } label: {
-                    Label("Add Subject", systemImage: "plus")
-                }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                EditButton()
             }
             ToolbarItem {
                 Menu {
+                    // Manually adding
+                    Button {
+                        showAddSubject.toggle()
+                        HapticsManager.shared.playHapticFeedback()
+                    } label: {
+                        Image(systemName: "plus")
+                        Text("Add Subject")
+                    }
+                    
                     // Scan incoming QR code
                     Button {
                         showScanner = true
