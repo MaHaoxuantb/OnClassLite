@@ -6,7 +6,5 @@
 	<array>
 		<string>remote-notification</string>
 	</array>
-    <key>NSCameraUsageDescription</key>
-    <string>Camera access is required to scan QR codes for importing subjects.</string>
 </dict>
 </plist>
