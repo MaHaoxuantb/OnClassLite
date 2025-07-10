@@ -153,7 +153,7 @@ struct AboutView: View {
                             )
                             .padding([.top, .bottom, .trailing], 5)
                     }
-                    Text("Version 0.3, Build 071025A05")
+                    Text("Version 0.3.6(A), Build 071025A16")
                         .font(.subheadline)
                         .padding()
                     Spacer().frame(height: 60)
