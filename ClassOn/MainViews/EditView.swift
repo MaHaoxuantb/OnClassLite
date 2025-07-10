@@ -23,7 +23,7 @@ struct EditView: View {
     var body: some View {
         NavigationSplitView {
             List {
-                Section(header: Text("Common Days")) {
+                Section(header: Text("Classes")) {
                     ForEach(CommonDays) { CommonDay in
                         NavigationLink {
                             ClassInCommonDaysView(commonDay: CommonDay)
@@ -33,7 +33,7 @@ struct EditView: View {
                         }
                     }
                 }
-                Section(header: Text("Category")) {
+                Section(header: Text("Events")) {
                     ForEach(Categories) { Category in
                         NavigationLink {
                             EventsInCategoryView(categoryName: Category.name, eventsInCategory: Category.events)

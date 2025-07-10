@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 enum Tab: Hashable {
-    case home, edit, settings
+    case home, shedule, settings
 }
 
 //MARK: -ContentView
@@ -34,9 +34,9 @@ struct ContentView: View {
                     Label("Home", systemImage: "house")
                 }
             EditView()
-                .tag(Tab.edit)
+                .tag(Tab.shedule)
                 .tabItem {
-                    Label("Edit", systemImage: "square.and.pencil")
+                    Label("Shedule", systemImage: "calendar")
                 }
             SettingsView()
                 .tag(Tab.settings)

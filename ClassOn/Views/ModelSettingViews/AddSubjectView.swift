@@ -156,9 +156,6 @@ struct EditSubjectListView: View {
         }
         .navigationTitle(Text("Subjects"))
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                EditButton()
-            }
             ToolbarItem {
                 Menu {
                     // Manually adding
@@ -187,6 +184,8 @@ struct EditSubjectListView: View {
                         Image(systemName: "square.and.arrow.up")
                         Text("Share by QR Code")
                     }
+                    
+                    EditButton()
                 } label: {
                     Label("More", systemImage: "ellipsis.circle.fill")
                         .padding()

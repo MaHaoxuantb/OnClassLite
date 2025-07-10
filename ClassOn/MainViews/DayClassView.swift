@@ -38,27 +38,28 @@ private extension Calendar {
 struct DayClassView: View {
     // All days kept in SwiftData.
     @Query(sort: \CommonDaysModel.number) private var allDays: [CommonDaysModel]
-
-    // MARK: - Today's Classes
-    private var todaysClasses: [CommonClass] {
-        let cal = Calendar.current
-        let nowMinutes = cal.component(.hour, from: .now) * 60
-                        + cal.component(.minute, from: .now)
-        let todayIndex = cal.weekdayIndexToday  // 0 = Mon … 6 = Sun
-        guard let day = allDays.first(where: { $0.number == todayIndex && $0.isCommonDay })
-        else { return [] }
-        let filtered = day.commonClasses.filter { $0.startMinute >= nowMinutes }
-        return filtered.sorted { $0.startMinute < $1.startMinute }
+    
+    /// Current weekday index (Mon = 0 … Sun = 6)
+    private var dayIndex: Int {
+        Calendar.current.weekdayIndexToday
     }
-
+    
+    // MARK: - Classes for the selected day
+    private var classesForDay: [CommonClass] {
+        guard let day = allDays.first(where: { $0.number == dayIndex })
+        else { return [] }
+        return day.commonClasses.sorted { $0.startMinute < $1.startMinute }
+    }
+    
     var body: some View {
         NavigationStack {
-            if todaysClasses.isEmpty {
+            if classesForDay.isEmpty {
                 ContentUnavailableView("No upcoming classes 🎉",
                                        systemImage: "checkmark.seal")
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 List {
-                    ForEach(todaysClasses, id: \.id) { cls in
+                    ForEach(classesForDay, id: \.id) { cls in
                         ClassCardView(cls: cls)
                             .listRowSeparator(.hidden)
                             .listRowBackground(
@@ -69,8 +70,9 @@ struct DayClassView: View {
                             )
                     }
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .listStyle(.plain)
-                .navigationTitle("Today's Classes")
+                .navigationTitle("\(SevenDay.allCases[dayIndex].rawValue) Classes")
             }
         }
         .onAppear {

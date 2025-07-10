@@ -56,6 +56,8 @@ final class CommonClass {
     @Relationship(deleteRule: .cascade)
         var tags: [ClassTag]?
     
+    var parentSubject: SubjectModel?
+    
     var colorHex: String
     var color: Color {
         get { Color(hex: colorHex) }
@@ -75,6 +77,7 @@ final class CommonClass {
         teacherForClass: Teacher? = nil,
         teachersForSubject: [Teacher]? = nil,
         tags: [ClassTag]? = nil,
+        parentSubject: SubjectModel? = nil,
         color: Color = .accentColor,
         parentDay: CommonDaysModel? = nil
     ) {
@@ -88,6 +91,7 @@ final class CommonClass {
         self.teacherForClass = teacherForClass
         self.teachersForSubject = teachersForSubject
         self.tags = tags
+        self.parentSubject = parentSubject
         self.colorHex = color.toHex()
         self.parentDay = parentDay
     }
@@ -115,7 +119,8 @@ final class SubjectModel {
     @Attribute(.unique)
         var id: UUID = UUID()
     var orderId: Int?
-    var name: String
+    @Attribute(.unique)
+        var name: String
     var teachersForSubject: [Teacher]?
     
     var colorHex: String
@@ -124,18 +129,22 @@ final class SubjectModel {
         set { colorHex = newValue.toHex() }
     }
     
+    var ClassBelongingToSubject: [CommonClass]?
+    
     init(
         id: UUID = UUID(),
         orderId: Int? = nil,
         name: String,
         teachersForSubject: [Teacher]? = nil,
         color: Color = .accentColor,
+        ClassBelongingToSubject: [CommonClass]? = nil
     ) {
         self.id = id
         self.orderId = orderId
         self.name = name
         self.teachersForSubject = teachersForSubject
         self.colorHex = color.toHex()
+        self.ClassBelongingToSubject = ClassBelongingToSubject
     }
 }
 
