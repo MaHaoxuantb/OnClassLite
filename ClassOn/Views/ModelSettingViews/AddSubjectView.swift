@@ -11,7 +11,7 @@ import SwiftData
 //MARK: -EditSubjectListView
 struct EditSubjectListView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \SubjectModel.name) private var subjects: [SubjectModel]
+    @Query(sort: \SubjectModel.orderId) private var subjects: [SubjectModel]
     @State private var showAddSubject = false
     
     var body: some View {
@@ -27,6 +27,7 @@ struct EditSubjectListView: View {
                 }
             }
             .onDelete(perform: deleteSubjects)
+            .onMove(perform: moveSubjects)
         }
         .navigationTitle(Text("Subjects"))
         .toolbar {
@@ -71,6 +72,18 @@ struct EditSubjectListView: View {
         withAnimation {
             for idx in offsets { modelContext.delete(subjects[idx]) }
         }
+    }
+
+    private func moveSubjects(at offsets: IndexSet, to destination: Int) {
+        // Reorder in-memory array
+        var updated = subjects
+        updated.move(fromOffsets: offsets, toOffset: destination)
+        // Persist new orderId values
+        for (index, subject) in updated.enumerated() {
+            subject.orderId = index
+        }
+        // Save changes
+        try? modelContext.save()
     }
 }
 

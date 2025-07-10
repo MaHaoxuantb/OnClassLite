@@ -248,7 +248,7 @@ struct AddCommonClassView: View {
                     .frame(maxHeight: 200)
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                            .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
                     )
                     .onChange(of: selectedSubject) {
                         if let s = selectedSubject {
@@ -269,7 +269,7 @@ struct AddCommonClassView: View {
                     .frame(maxHeight: 200)
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                            .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
                     )
 
                     // Teacher picker
@@ -277,6 +277,7 @@ struct AddCommonClassView: View {
                     Picker("Teacher", selection: $teacherForClass) {
                         ForEach(teacherOptions, id: \.id) { teacher in
                             Text(teacher.name).tag(Optional(teacher))
+                                .foregroundStyle(Color.primary)
                         }
                     }
                     .pickerStyle(.menu)
@@ -284,14 +285,14 @@ struct AddCommonClassView: View {
                     .frame(maxWidth: .infinity, minHeight:80)
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                            .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
                     )
                     
                     ColorPicker("Color", selection: $color)
                         .padding()
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                                .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
                         )
                     
                     VStack(alignment: .leading) {
@@ -303,7 +304,7 @@ struct AddCommonClassView: View {
                     .padding()
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                            .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
                     )
                 }
                 Spacer()

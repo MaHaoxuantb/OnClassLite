@@ -114,6 +114,7 @@ final class Teacher {
 final class SubjectModel {
     @Attribute(.unique)
         var id: UUID = UUID()
+    var orderId: Int?
     var name: String
     var teachersForSubject: [Teacher]?
     
@@ -125,11 +126,13 @@ final class SubjectModel {
     
     init(
         id: UUID = UUID(),
+        orderId: Int? = nil,
         name: String,
         teachersForSubject: [Teacher]? = nil,
         color: Color = .accentColor,
     ) {
         self.id = id
+        self.orderId = orderId
         self.name = name
         self.teachersForSubject = teachersForSubject
         self.colorHex = color.toHex()
