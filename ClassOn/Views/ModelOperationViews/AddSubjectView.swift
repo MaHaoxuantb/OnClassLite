@@ -1,0 +1,103 @@
+//
+//  AddSubjectView.swift
+//  OnClassLite
+//
+//  Created by Thomas B on 7/10/25.
+//
+
+import SwiftUI
+import SwiftData
+
+//MARK: -AddSubjectView
+struct AddSubjectView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Binding var isPresented: Bool
+    
+    @State private var name: String = ""
+    @State private var teachersText: String = ""
+    @State private var color: Color = .accentColor
+    
+    var body: some View {
+        VStack {
+            HStack {
+                Text("New Subject").font(.headline).padding()
+                Spacer()
+                Button {
+                    guard !name.isEmpty else { return }
+                    // Build Teacher entities from entered names
+                    let teacherNames = teachersText
+                        .split(separator: ",")
+                        .map { $0.trimmingCharacters(in: .whitespaces) }
+                    let teacherEntities = teacherNames.map { name in
+                        let t = Teacher(name: name)
+                        modelContext.insert(t)
+                        return t
+                    }
+                    let newSubject = SubjectModel(
+                        name: name,
+                        teachersForSubject: teacherEntities,
+                        color: color
+                    )
+                    modelContext.insert(newSubject)
+                    try? modelContext.save()
+                    isPresented = false
+                    HapticsManager.shared.playHapticFeedback()
+                } label: {
+                    Image(systemName: "checkmark.circle.fill")
+                        .resizable()
+                        .frame(width: 30, height: 30)
+                        .foregroundStyle(name.isEmpty
+                             ? Color.gray.opacity(0.1)
+                             : Color.gray)
+                        .padding()
+                }
+            }
+            .padding()
+            Form {
+                TextField("Name", text: $name)
+                TextField("Teachers (comma separated)", text: $teachersText)
+                ColorPicker("Color", selection: $color)
+            }
+            .scrollContentBackground(.hidden)
+            .background(Color.clear)
+            Spacer()
+        }
+        .background(Color.gray.opacity(0.1))
+    }
+}
+
+//MARK: -SubjectDetailView
+struct SubjectDetailView: View {
+    @Environment(\.modelContext) private var modelContext
+    @Bindable var subject: SubjectModel
+    @State private var teachersText: String
+
+    init(subject: SubjectModel) {
+        self.subject = subject
+        _teachersText = State(initialValue:
+            subject.teachersForSubject?
+                .map { $0.name }
+                .joined(separator: ", ") ?? "")
+    }
+
+    var body: some View {
+        Form {
+            TextField("Name", text: $subject.name)
+            TextField("Teachers (comma separated)", text: $teachersText)
+                .onChange(of: teachersText) {
+                    let names = teachersText
+                        .split(separator: ",")
+                        .map { $0.trimmingCharacters(in: .whitespaces) }
+                    let teacherEntities = names.map { name in
+                        let t = Teacher(name: name)
+                        modelContext.insert(t)
+                        return t
+                    }
+                    subject.teachersForSubject = teacherEntities
+                }
+            ColorPicker("Color", selection: $subject.color)
+        }
+        .navigationTitle(Text(subject.name))
+        .onDisappear { try? modelContext.save() }
+    }
+}

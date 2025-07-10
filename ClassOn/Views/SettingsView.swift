@@ -37,6 +37,18 @@ struct SettingsView: View {
                         )
                     }
                 }
+                Section(header: Text("Pattern")) {
+                    NavigationLink {
+                        EditTimetableView()
+                    } label: {
+                        Text("Edit TimeTable")
+                    }
+                    NavigationLink {
+                        EditSubjectListView()
+                    } label: {
+                        Text("Edit Subjects")
+                    }
+                }
                 Section(header: Text("Functions")) {
                     Picker("Start of the week", selection: $oneWeekStartWith) {
                         Text("Monday").tag(0)

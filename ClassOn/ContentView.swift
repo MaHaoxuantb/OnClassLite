@@ -26,7 +26,7 @@ struct ContentView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            HomeView()
+            CalendarView()
                 .tag(Tab.home)
                 .tabItem {
                     Label("Home", systemImage: "house")
@@ -56,9 +56,12 @@ struct ContentView: View {
                     Label("Settings", systemImage: "gearshape")
                 }
         }
+        //Use .onAppear in every view is better than this solution
+        /*
         .onChange(of: selectedTab) {
             HapticsManager.shared.playHapticFeedback()
         }
+         */
         //createDefaultDaysIfNeeded
         .onAppear {
             if CommonDays.count < 7 {
@@ -105,14 +108,6 @@ struct ContentView: View {
     }
 }
 
-struct HomeView: View {
-    var body: some View {
-        TabView {
-            Text("This is HomeView")
-            
-        }
-    }
-}
 
 #Preview {
     // Simulate first launch
