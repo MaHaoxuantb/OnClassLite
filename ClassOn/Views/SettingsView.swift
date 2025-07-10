@@ -68,6 +68,9 @@ struct SettingsView: View {
                     NavigationLink(destination: LicenseView()) {
                         Text("App Licenses & Agreements")
                     }
+                    NavigationLink(destination: HelpCenterView()) {
+                        Text("Help Center")
+                    }
                     NavigationLink(destination: ExportAllView()) {
                         Text("Export Data")
                     }
@@ -211,6 +214,13 @@ struct ThirdPartiesView: View {
             .padding(.horizontal, 8)
         }
         .navigationTitle("Third Party Usages")
+    }
+}
+
+struct HelpCenterView: View {
+    var body: some View {
+        Text("Help Center")
+            .navigationTitle(Text("Help Center"))
     }
 }
 

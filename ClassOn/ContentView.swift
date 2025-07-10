@@ -28,7 +28,7 @@ struct ContentView: View {
     
     var body: some View {
         TabView(selection: $selectedTab) {
-            CalendarView()
+            DayClassView()
                 .tag(Tab.home)
                 .tabItem {
                     Label("Home", systemImage: "house")

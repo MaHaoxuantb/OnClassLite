@@ -144,6 +144,7 @@ struct EditSubjectListView: View {
                            let img = generateQRCode(from: json) {
                             qrPayload = QRImageWrapper(image: img)
                         }
+                        HapticsManager.shared.playHapticFeedback()
                     } label: {
                         Label("Share", systemImage: "square.and.arrow.up")
                     }
@@ -169,6 +170,7 @@ struct EditSubjectListView: View {
                     // Scan incoming QR code
                     Button {
                         showScanner = true
+                        HapticsManager.shared.playHapticFeedback()
                     } label: {
                         Image(systemName: "qrcode.viewfinder")
                         Text("Scan To Add")
@@ -177,6 +179,7 @@ struct EditSubjectListView: View {
                     // Share current subjects list as QR code
                     Button {
                         shareAllSubjects()
+                        HapticsManager.shared.playHapticFeedback()
                     } label: {
                         Image(systemName: "square.and.arrow.up")
                         Text("Share by QR Code")
@@ -211,6 +214,9 @@ struct EditSubjectListView: View {
                 Text("Scan this on another device to import subjects.")
                     .padding()
             }
+        }
+        .onAppear {
+            HapticsManager.shared.playHapticFeedback()
         }
     }
     

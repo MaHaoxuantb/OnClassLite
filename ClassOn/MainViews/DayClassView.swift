@@ -35,48 +35,30 @@ private extension Calendar {
 }
 
 // MARK: - View
-struct CalendarView: View {
+struct DayClassView: View {
     // All days kept in SwiftData.
     @Query(sort: \CommonDaysModel.number) private var allDays: [CommonDaysModel]
 
-    // Compute the next set of classes (today → six days ahead).
-    private var upcomingClasses: [CommonClass] {
-        let cal         = Calendar.current
-        let nowMinutes  = cal.component(.hour,   from: .now) * 60 +
-                          cal.component(.minute, from: .now)
-
-        let todayIndex  = cal.weekdayIndexToday        // 0 = Mon … 6 = Sun
-        var result: [CommonClass] = []
-
-        for offset in 0..<7 {                          // look up to one week ahead
-            let idx   = (todayIndex + offset) % 7
-            guard let day = allDays.first(where: { $0.number == idx && $0.isCommonDay })
-            else { continue }
-
-            // -- Filter out past classes on the current day – keep everything for later days.
-            let filtered = day.commonClasses.filter { cls in
-                offset == 0 ? cls.startMinute >= nowMinutes : true
-            }
-
-            result.append(contentsOf: filtered)
-        }
-
-        // Sort first by weekday, then by startMinute.
-        return result.sorted {
-            let d1 = $0.parentDay?.number ?? 0
-            let d2 = $1.parentDay?.number ?? 0
-            return d1 == d2 ? $0.startMinute < $1.startMinute : d1 < d2
-        }
+    // MARK: - Today's Classes
+    private var todaysClasses: [CommonClass] {
+        let cal = Calendar.current
+        let nowMinutes = cal.component(.hour, from: .now) * 60
+                        + cal.component(.minute, from: .now)
+        let todayIndex = cal.weekdayIndexToday  // 0 = Mon … 6 = Sun
+        guard let day = allDays.first(where: { $0.number == todayIndex && $0.isCommonDay })
+        else { return [] }
+        let filtered = day.commonClasses.filter { $0.startMinute >= nowMinutes }
+        return filtered.sorted { $0.startMinute < $1.startMinute }
     }
 
     var body: some View {
         NavigationStack {
-            if upcomingClasses.isEmpty {
+            if todaysClasses.isEmpty {
                 ContentUnavailableView("No upcoming classes 🎉",
                                        systemImage: "checkmark.seal")
             } else {
                 List {
-                    ForEach(upcomingClasses, id: \.id) { cls in
+                    ForEach(todaysClasses, id: \.id) { cls in
                         ClassCardView(cls: cls)
                             .listRowSeparator(.hidden)
                             .listRowBackground(
@@ -88,7 +70,7 @@ struct CalendarView: View {
                     }
                 }
                 .listStyle(.plain)
-                .navigationTitle("Upcoming Classes")
+                .navigationTitle("Today's Classes")
             }
         }
         .onAppear {
@@ -139,7 +121,7 @@ private struct ClassCardView: View {
 
 // MARK: - Preview
 #Preview {
-    CalendarView()
+    DayClassView()
         .modelContainer(
             for: [CommonDaysModel.self,
                   CategoriesModel.self,
