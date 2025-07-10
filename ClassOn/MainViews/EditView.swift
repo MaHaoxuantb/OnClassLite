@@ -232,7 +232,7 @@ struct AddCommonClassView: View {
                             .padding()
                     }
                 }
-
+                
                 VStack(spacing: 16) {
                     // Subject picker
                     Picker("Subject", selection: $selectedSubject) {
@@ -245,14 +245,18 @@ struct AddCommonClassView: View {
                         }
                     }
                     .pickerStyle(.wheel)
-                    .frame(maxHeight: 150)
+                    .frame(maxHeight: 200)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                    )
                     .onChange(of: selectedSubject) {
                         if let s = selectedSubject {
                             color = s.color
                             teacherForClass = s.teachersForSubject?.first
                         }
                     }
-
+                    
                     // Period picker
                     Picker("Period", selection: $selectedPeriodIndex) {
                         ForEach(SchoolSchedule.periodStartMinutes.indices, id: \.self) { i in
@@ -262,7 +266,11 @@ struct AddCommonClassView: View {
                         }
                     }
                     .pickerStyle(.wheel)
-                    .frame(maxHeight: 150)
+                    .frame(maxHeight: 200)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                    )
 
                     // Teacher picker
                     let teacherOptions = selectedSubject?.teachersForSubject ?? []
@@ -272,10 +280,31 @@ struct AddCommonClassView: View {
                         }
                     }
                     .pickerStyle(.menu)
-
+                    .padding()
+                    .frame(maxWidth: .infinity, minHeight:80)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                    )
+                    
                     ColorPicker("Color", selection: $color)
-                    TextField("Description", text: $description)
-                    TextField("Details", text: $details)
+                        .padding()
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 20)
+                                .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                        )
+                    
+                    VStack(alignment: .leading) {
+                        Text("optional")
+                            .font(.caption)
+                        TextField("Description", text: $description)
+                        TextField("Details", text: $details)
+                    }
+                    .padding()
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.gray.opacity(0.4), lineWidth: 1)
+                    )
                 }
                 Spacer()
             }
