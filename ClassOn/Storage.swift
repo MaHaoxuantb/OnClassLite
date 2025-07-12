@@ -212,13 +212,13 @@ extension PeriodModel {
 }
 
 
-//MARK: -Other Categories
+//MARK: -Events Categories
 @Model
 final class CategoriesModel {
     @Attribute(.unique)
         var id: UUID = UUID()
     var name: String
-    var sortIndex: Int  // <- This is used for sorting
+    var sortIndex: Int  //used for sorting
     var descriptions: String?
     var details: String?
     var colorHex: String
@@ -246,11 +246,13 @@ final class Event {
     @Attribute(.unique)
         var id: UUID = UUID()
     var name: String
+    var eventEnded: Bool = false
     
     var date: Date //If full day, store the timeStamp for 00:00
     var isAllDay: Bool = false
     var duration: Int? //min
     var needLoop: Bool
+    var loopDuration: Int? //days
     
     var createdAt: Date = Date()
     var updatedAt: Date = Date()
@@ -277,10 +279,12 @@ final class Event {
     init(
         id: UUID = UUID(),
         name: String,
+        eventEnded: Bool = false,
         
         date: Date,
         duration: Int,
         needLoop: Bool,
+        loopDuration: Int? = nil,
         
         createAt: Date = Date(),
         updatedAt: Date = Date(),
@@ -300,10 +304,12 @@ final class Event {
     ) {
         self.id = id
         self.name = name
+        self.eventEnded = eventEnded
         
         self.date = date
         self.duration = duration
         self.needLoop = needLoop
+        self.loopDuration = loopDuration
         
         self.createdAt = createAt
         self.updatedAt = updatedAt

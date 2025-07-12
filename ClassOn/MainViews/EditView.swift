@@ -23,7 +23,7 @@ struct EditView: View {
     var body: some View {
         NavigationSplitView {
             List {
-                Section(header: Text("Classes")) {
+                Section(header: Text("Common Classes")) {
                     ForEach(CommonDays) { CommonDay in
                         NavigationLink {
                             ClassInCommonDaysView(commonDay: CommonDay)
@@ -33,7 +33,7 @@ struct EditView: View {
                         }
                     }
                 }
-                Section(header: Text("Events")) {
+                Section(header: Text("Category of Events")) {
                     ForEach(Categories) { Category in
                         NavigationLink {
                             EventsInCategoryView(categoryName: Category.name, eventsInCategory: Category.events)
@@ -184,41 +184,6 @@ struct AddCategoryView: View {
             }
             .padding()
             Spacer()
-        }
-    }
-}
-
-//MARK: -EventsInCategoryView
-struct EventsInCategoryView: View {
-    var categoryName: String
-    var eventsInCategory: [Event]
-    
-    var body: some View {
-        List {
-            ForEach(eventsInCategory) { event in
-                NavigationLink {
-                    Text("day: \(event.name)")
-                } label: {
-                    Text("\(event.name)")
-                        .font(.headline)
-                }
-            }
-        }
-        .navigationTitle(Text("\(categoryName)"))
-        .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                EditButton()
-            }
-            ToolbarItem {
-                Button {
-                    HapticsManager.shared.playHapticFeedback()
-                } label: {
-                    Label("Add Category", systemImage: "plus")
-                }
-            }
-        }
-        .onAppear {
-            HapticsManager.shared.playHapticFeedback()
         }
     }
 }
