@@ -36,7 +36,15 @@ struct ClassOnApp: App {
                 return try ModelContainer(for: schema)
             }
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            // Fallback to an in-memory ModelContainer on failure
+            print("ModelContainer creation error: \(error)")
+            let fallbackConfig = ModelConfiguration(isStoredInMemoryOnly: true)
+            do {
+                return try ModelContainer(for: schema, configurations: [fallbackConfig])
+            } catch {
+                // If fallback also fails, log and abort
+                fatalError("Fallback ModelContainer creation also failed: \(error)")
+            }
         }
     }()
     

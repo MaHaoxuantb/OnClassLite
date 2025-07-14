@@ -12,9 +12,9 @@ import SwiftData
 struct ClassInCommonDaysView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var commonDay: CommonDaysModel
-
+    
     @State private var showAddClassView = false
-
+    
     var body: some View {
         List {
             ForEach(commonDay.commonClasses) { commonClass in
@@ -31,8 +31,8 @@ struct ClassInCommonDaysView: View {
                         Text(String(format: "%02d:%02d",
                                     commonClass.startMinute / 60,
                                     commonClass.startMinute % 60))
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                     }
                 }
                 //Card-Like style
@@ -51,6 +51,7 @@ struct ClassInCommonDaysView: View {
                         )
                 )
             }
+            .onDelete(perform: delete)
         }
         .navigationTitle(Text("\(commonDay.day.rawValue)"))
         .toolbar {
@@ -72,6 +73,18 @@ struct ClassInCommonDaysView: View {
         }
         .onAppear {
             HapticsManager.shared.playHapticFeedback()
+        }
+    }
+    
+    private func delete(at offsets: IndexSet) {
+        let toDelete = offsets.map { commonDay.commonClasses[$0] }
+        for commonClass in toDelete {
+            modelContext.delete(commonClass)
+        }
+        do {
+            try modelContext.save()
+        } catch {
+            print("Failed to delete class: \(error)")
         }
     }
 }

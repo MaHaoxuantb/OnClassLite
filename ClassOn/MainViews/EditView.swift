@@ -36,7 +36,7 @@ struct EditView: View {
                 Section(header: Text("Category of Events")) {
                     ForEach(Categories) { Category in
                         NavigationLink {
-                            EventsInCategoryView(categoryName: Category.name, eventsInCategory: Category.events)
+                            EventsInCategoryView(category: Category)
                         } label: {
                             HStack {
                                 Circle()

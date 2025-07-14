@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 import SwiftUI //This is for storing colors
+import Combine
 
 //MARK: -Common days & Classes
 enum SevenDay: String, CaseIterable, Codable {
@@ -106,9 +107,15 @@ final class ClassTag {
 }
 
 @Model
-final class Teacher {
+final class Teacher: ObservableObject {
+    @Attribute(.unique)
+        var id: UUID = UUID()
     @Attribute(.unique) var name: String
-    init(name: String) {
+    init(
+        id: UUID = UUID(),
+        name: String
+    ) {
+        self.id = id
         self.name = name
     }
 }
@@ -214,7 +221,7 @@ extension PeriodModel {
 
 //MARK: -Events Categories
 @Model
-final class CategoriesModel {
+final class CategoriesModel: ObservableObject {
     @Attribute(.unique)
         var id: UUID = UUID()
     var name: String
@@ -367,7 +374,7 @@ extension CommonClass {
                     isCommonClass: true,
                     startMinute: minute,
                     durationMinutes: duration,
-                    parentDay: parentDay
+                    parentDay: parentDay,
                 )
             }
     }
