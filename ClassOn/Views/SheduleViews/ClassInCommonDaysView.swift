@@ -19,7 +19,7 @@ struct ClassInCommonDaysView: View {
         List {
             ForEach(commonDay.commonClasses) { commonClass in
                 NavigationLink {
-                    CommonClassDetailView(commonClass: commonClass)
+                    CommonClassFormView(commonDay: $commonDay, commonClass: .constant(commonClass), isPresented: .constant(true))
                 } label: {
                     HStack {
                         Circle()
@@ -68,8 +68,7 @@ struct ClassInCommonDaysView: View {
             }
         }
         .sheet(isPresented: $showAddClassView) {
-            AddCommonClassView(commonDay: commonDay,
-                               isPresented: $showAddClassView)
+            CommonClassFormView(commonDay: $commonDay, commonClass: .constant(nil), isPresented: $showAddClassView)
         }
         .onAppear {
             HapticsManager.shared.playHapticFeedback()
@@ -89,60 +88,72 @@ struct ClassInCommonDaysView: View {
     }
 }
 
-//MARK: -AddCommonClassView
-struct AddCommonClassView: View {
+// Shared form for adding or editing a CommonClass
+struct CommonClassFormView: View {
     @Environment(\.modelContext) private var modelContext
-    @Bindable var commonDay: CommonDaysModel
+    @Binding var commonDay: CommonDaysModel
+    @Binding var commonClass: CommonClass?
     @Binding var isPresented: Bool
 
     @Query(sort: \SubjectModel.name) private var subjects: [SubjectModel]
     @Query(sort: \PeriodModel.index) private var periodModels: [PeriodModel]
+    @State private var name: String = ""
     @State private var selectedSubject: SubjectModel?
-    @State private var selectedPeriod: PeriodModel? = nil
+    @State private var selectedPeriod: PeriodModel?
     @State private var color: Color = .accentColor
-    @State private var teacherForClass: Teacher? = nil
-    @State private var description = ""
-    @State private var details = ""
+    @State private var teacherForClass: Teacher?
+    @State private var descriptionText = ""
+    @State private var detailsText = ""
+
+    var isEditing: Bool { commonClass != nil }
 
     var body: some View {
         ScrollView {
             VStack {
-                // Header
                 HStack {
-                    Text("New Class")
+                    Text(isEditing ? "Edit Class" : "New Class")
                         .font(.headline)
                         .padding()
                     Spacer()
                     Button {
-                        guard let subject = selectedSubject else { return }
-                        guard let period = selectedPeriod else { return }
+                        guard let subject = selectedSubject,
+                              let period = selectedPeriod else { return }
                         let startMinute = period.startMinute
                         let duration = period.durationMinutes
 
-                        // Use the subject's teachersForSubject array directly
                         let teacherEntities = subject.teachersForSubject
-                        // The selected teacher is teacherForClass
-                        let selectedTeacherEntity = teacherForClass
+                        let selectedTeacher = teacherForClass
 
-                        // Create the new CommonClass with Teacher relationships
-                        let newClass = CommonClass(
-                            name: subject.name,
-                            isCommonClass: true,
-                            startMinute: startMinute,
-                            durationMinutes: duration,
-                            description: description.isEmpty ? nil : description,
-                            details: details.isEmpty ? nil : details,
-                            teacherForClass: selectedTeacherEntity,
-                            teachersForSubject: teacherEntities,
-                            tags: nil,
-                            color: color,
-                            parentDay: commonDay
-                        )
-
-                        commonDay.commonClasses.append(newClass)
-                        modelContext.insert(newClass)
+                        if let editing = commonClass {
+                            // Update existing
+                            editing.name = name
+                            editing.color = color
+                            editing.startMinute = startMinute
+                            editing.durationMinutes = duration
+                            editing.descriptions = descriptionText.isEmpty ? nil : descriptionText
+                            editing.details = detailsText.isEmpty ? nil : detailsText
+                            editing.teachersForSubject = teacherEntities
+                            editing.teacherForClass = selectedTeacher
+                        } else {
+                            // Create new
+                            let newClass = CommonClass(
+                                name: subject.name,
+                                isCommonClass: true,
+                                startMinute: startMinute,
+                                durationMinutes: duration,
+                                description: descriptionText.isEmpty ? nil : descriptionText,
+                                details: detailsText.isEmpty ? nil : detailsText,
+                                teacherForClass: selectedTeacher,
+                                teachersForSubject: teacherEntities,
+                                tags: nil,
+                                color: color,
+                                parentDay: commonDay
+                            )
+                            commonDay.commonClasses.append(newClass)
+                            modelContext.insert(newClass)
+                        }
                         do { try modelContext.save() } catch {
-                            print("Failed to save new class: \(error)")
+                            print("Failed to save class: \(error)")
                         }
                         isPresented = false
                         HapticsManager.shared.playHapticFeedback()
@@ -150,12 +161,12 @@ struct AddCommonClassView: View {
                         Image(systemName: "checkmark.circle.fill")
                             .resizable()
                             .frame(width: 30, height: 30)
-                            .foregroundStyle(selectedSubject == nil ? Color.gray.opacity(0.1) : Color.gray)
+                            .foregroundStyle((selectedSubject == nil) ? Color.gray.opacity(0.1) : Color.gray)
                             .padding()
                     }
                 }
-                
                 VStack(spacing: 16) {
+                    // Initialize state on appear
                     // Subject picker
                     Picker("Subject", selection: $selectedSubject) {
                         ForEach(subjects) { subject in
@@ -168,263 +179,68 @@ struct AddCommonClassView: View {
                     }
                     .pickerStyle(.wheel)
                     .frame(maxHeight: 200)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
-                    )
-                    .onChange(of: selectedSubject) {
-                        if let s = selectedSubject {
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.gray.opacity(0.2), lineWidth: 0.5))
+                    .onChange(of: selectedSubject) { s in
+                        if let s = s {
                             color = s.color
-                            teacherForClass = s.teachersForSubject?.first
+                            teacherForClass = s.teachersForSubject.first
                         }
                     }
-                    
+
                     // Period picker
                     Picker("Period", selection: $selectedPeriod) {
                         ForEach(periodModels) { period in
-                            let hour = period.startMinute / 60
-                            let minute = period.startMinute % 60
-                            Text("Period \(period.index + 1) – \(String(format: "%02d:%02d", hour, minute))")
+                            Text("Period \(period.index + 1) – \(String(format: "%02d:%02d", period.startMinute/60, period.startMinute%60))")
                                 .tag(Optional(period))
                         }
                     }
                     .pickerStyle(.wheel)
                     .frame(maxHeight: 200)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
-                    )
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.gray.opacity(0.2), lineWidth: 0.5))
 
                     // Teacher picker
-                    let teacherOptions = selectedSubject?.teachersForSubject ?? []
                     Picker("Teacher", selection: $teacherForClass) {
-                        ForEach(teacherOptions, id: \.id) { teacher in
+                        ForEach(selectedSubject?.teachersForSubject ?? [], id: \.id) { teacher in
                             Text(teacher.name).tag(Optional(teacher))
-                                .foregroundStyle(Color.primary)
                         }
                     }
                     .pickerStyle(.menu)
-                    .padding()
-                    .frame(maxWidth: .infinity, minHeight:80)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
-                    )
-                    
+                    .frame(maxWidth: .infinity, minHeight: 80)
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.gray.opacity(0.2), lineWidth: 0.5))
+
                     ColorPicker("Color", selection: $color)
                         .padding()
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
-                        )
-                    
+                        .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.gray.opacity(0.2), lineWidth: 0.5))
+
                     VStack(alignment: .leading) {
-                        Text("optional")
-                            .font(.caption)
-                        TextField("Description", text: $description)
-                        TextField("Details", text: $details)
+                        Text("optional").font(.caption)
+                        TextField("Description", text: $descriptionText)
+                        TextField("Details", text: $detailsText)
                     }
                     .padding()
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.gray.opacity(0.2), lineWidth: 0.5)
-                    )
+                    .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.gray.opacity(0.2), lineWidth: 0.5))
                 }
                 Spacer()
             }
             .padding()
-        }
-        .onAppear {
-            if selectedSubject == nil {
-                // Auto-select the first subject
-                selectedSubject = subjects.first
-                if let first = selectedSubject {
-                    color = first.color
-                    teacherForClass = first.teachersForSubject?.first
+            .onAppear {
+                if isEditing, let editing = commonClass {
+                    name = editing.name
+                    color = editing.color
+                    selectedPeriod = periodModels.first(where: { $0.startMinute == editing.startMinute })
+                    selectedSubject = subjects.first(where: { $0.id == editing.teachersForSubject?.first?.id })
+                    teacherForClass = editing.teacherForClass
+                    descriptionText = editing.descriptions ?? ""
+                    detailsText = editing.details ?? ""
+                } else {
+                    selectedSubject = subjects.first
+                    selectedPeriod = periodModels.first
+                    if let first = selectedSubject {
+                        color = first.color
+                        teacherForClass = first.teachersForSubject.first
+                    }
                 }
-            }
-            if selectedPeriod == nil {
-                selectedPeriod = periodModels.first
             }
         }
     }
 }
-
-//MARK: -CommonClassDetailView
-@Query(sort: \PeriodModel.index) private var periodModels: [PeriodModel]
-struct CommonClassDetailView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Bindable var commonClass: CommonClass
-
-    @State private var name: String
-    @State private var selectedPeriod: PeriodModel?
-    @State private var color: Color
-    @State private var teacherForClass: String
-    @State private var teachersForSubjectText: String
-    @State private var descriptionText: String
-    @State private var detailsText: String
-
-    init(commonClass: CommonClass) {
-        self.commonClass = commonClass
-        _name = State(initialValue: commonClass.name)
-        _color = State(initialValue: commonClass.color)
-        let period = periodModels.first(where: { $0.startMinute == commonClass.startMinute })
-        _selectedPeriod = State(initialValue: period)
-        _teacherForClass = State(initialValue: commonClass.teacherForClass?.name ?? "")
-        _teachersForSubjectText = State(
-            initialValue: commonClass.teachersForSubject?
-                .map { $0.name }
-                .joined(separator: ", ") ?? ""
-        )
-        _descriptionText = State(initialValue: commonClass.descriptions ?? "")
-        _detailsText = State(initialValue: commonClass.details ?? "")
-    }
-
-    var body: some View {
-        ScrollView {
-            VStack {
-                // Header
-                HStack {
-                    Text("Edit Class")
-                        .font(.headline)
-                        .padding()
-                    Spacer()
-                    Button {
-                        guard !name.isEmpty else { return }
-
-                        // Update model
-                        commonClass.name = name
-                        commonClass.color = color
-                        if let period = selectedPeriod {
-                            commonClass.startMinute = period.startMinute
-                            commonClass.durationMinutes = period.durationMinutes
-                        }
-                        // Build Teacher entities for all entered names
-                        var teacherEntities: [Teacher]? = nil
-                        let names = teachersForSubjectText
-                            .split(separator: ",")
-                            .map { $0.trimmingCharacters(in: .whitespaces) }
-                        if !names.isEmpty {
-                            teacherEntities = names.map { name in
-                                let teacher = Teacher(name: name)
-                                modelContext.insert(teacher)
-                                return teacher
-                            }
-                        }
-                        // Assign relationship arrays
-                        commonClass.teachersForSubject = teacherEntities
-                        // Assign single teacher relationship
-                        let selectedTeacherEntity = teacherEntities?.first { $0.name == teacherForClass }
-                        commonClass.teacherForClass = selectedTeacherEntity
-                        commonClass.descriptions = descriptionText.isEmpty ? nil : descriptionText
-                        commonClass.details = detailsText.isEmpty ? nil : detailsText
-
-                        do { try modelContext.save() } catch {
-                            print("Failed to save class: \(error)")
-                        }
-                        HapticsManager.shared.playHapticFeedback()
-                    } label: {
-                        Image(systemName: "checkmark.circle.fill")
-                            .resizable()
-                            .frame(width: 30, height: 30)
-                            .foregroundStyle(name.isEmpty ? Color.gray.opacity(0.1) : Color.gray)
-                            .padding()
-                    }
-                }
-
-                // Form
-                VStack(spacing: 16) {
-                    TextField("Name", text: $name)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .foregroundStyle(.regularMaterial)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray, lineWidth: 0.2)
-                        )
-
-                    Picker("Period", selection: $selectedPeriod) {
-                        ForEach(periodModels) { period in
-                            let hour = period.startMinute / 60
-                            let minute = period.startMinute % 60
-                            Text("Period \(period.index + 1) – \(String(format: "%02d:%02d", hour, minute))")
-                                .tag(Optional(period))
-                        }
-                    }
-                    .pickerStyle(.wheel)
-                    .frame(maxHeight: 150)
-
-                    ColorPicker("Color", selection: $color)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .foregroundStyle(.regularMaterial)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray, lineWidth: 0.2)
-                        )
-
-                    // Allow entering all possible teachers for the subject
-                    Text("Teachers for subject")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    TextField("Enter names, separated by commas", text: $teachersForSubjectText)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .foregroundStyle(.regularMaterial)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 20)
-                                .stroke(Color.gray, lineWidth: 0.2)
-                        )
-
-                    // Picker to choose which teacher actually teaches this class
-                    Text("Teacher for this class")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    let detailTeachers = teachersForSubjectText
-                        .split(separator: ",")
-                        .map { $0.trimmingCharacters(in: .whitespaces) }
-                    Picker("Select teacher", selection: $teacherForClass) {
-                        ForEach(detailTeachers, id: \.self) { teacher in
-                            Text(teacher).tag(teacher)
-                        }
-                    }
-                    .pickerStyle(.menu)
-                    .padding()
-                    .background(
-                        RoundedRectangle(cornerRadius: 20)
-                            .foregroundStyle(.regularMaterial)
-                    )
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.gray, lineWidth: 0.2)
-                    )
-
-                    TextField("Description", text: $descriptionText)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .foregroundStyle(.thinMaterial)
-                        )
-
-                    TextField("Details", text: $detailsText)
-                        .padding()
-                        .background(
-                            RoundedRectangle(cornerRadius: 20)
-                                .foregroundStyle(.thinMaterial)
-                        )
-                }
-
-                Spacer()
-            }
-            .padding()
-        }
-        .navigationTitle(Text(name))
-    }
-}
-
