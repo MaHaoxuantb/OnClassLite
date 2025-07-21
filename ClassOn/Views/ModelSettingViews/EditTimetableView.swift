@@ -15,14 +15,12 @@ struct EditTimetableView: View {
     @Query(sort: \PeriodModel.index) private var periods: [PeriodModel]
     @State private var showExpandedTools: Bool = false
     @State private var selectedPeriod: PeriodModel?
-    @State private var isShowingPeriodEditor: Bool = false
     
     var body: some View {
         List {
             ForEach(periods) { period in
                 Button {
                     selectedPeriod = period
-                    isShowingPeriodEditor = true
                 } label: {
                     HStack {
                         Text("Period \(period.index + 1)")
@@ -42,8 +40,10 @@ struct EditTimetableView: View {
                 Menu {
                     // Manually adding
                     Button {
-                        selectedPeriod = nil
-                        isShowingPeriodEditor = true
+                        // Prepare a new period for creation
+                        let newIndex = periods.count
+                        let defaultStartMinute = 480 // 8:00 AM
+                        selectedPeriod = PeriodModel(index: newIndex, startMinute: defaultStartMinute, durationMinutes: 45)
                     } label: {
                         Image(systemName: "plus")
                         Text("Add Period")
@@ -72,9 +72,14 @@ struct EditTimetableView: View {
                 }
             }
         }
-        .sheet(isPresented: $isShowingPeriodEditor) {
-            AddPeriodView(isPresented: $isShowingPeriodEditor, periodToEdit: selectedPeriod)
-                .id(selectedPeriod?.id ?? UUID())
+        .sheet(item: $selectedPeriod) { period in
+            AddPeriodView(
+                isPresented: Binding(
+                    get: { selectedPeriod != nil },
+                    set: { newValue in if !newValue { selectedPeriod = nil } }
+                ),
+                periodToEdit: period
+            )
         }
         .onAppear {
             HapticsManager.shared.playHapticFeedback()
