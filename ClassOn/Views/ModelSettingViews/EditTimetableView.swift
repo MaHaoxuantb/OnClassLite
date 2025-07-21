@@ -74,6 +74,7 @@ struct EditTimetableView: View {
         }
         .sheet(isPresented: $isShowingPeriodEditor) {
             AddPeriodView(isPresented: $isShowingPeriodEditor, periodToEdit: selectedPeriod)
+                .id(selectedPeriod?.id ?? UUID())
         }
         .onAppear {
             HapticsManager.shared.playHapticFeedback()
@@ -98,6 +99,7 @@ struct EditTimetableView: View {
 
 //MARK: -AddPeriodView
 struct AddPeriodView: View {
+    private let durationOptions = Array(stride(from: 25, through: 120, by: 5))
     @Environment(\.modelContext) private var modelContext
     @Binding var isPresented: Bool
     var periodToEdit: PeriodModel?
@@ -157,14 +159,22 @@ struct AddPeriodView: View {
                 }
             }
             Form {
-                DatePicker(
-                    "Start Time",
-                    selection: $startTime,
-                    displayedComponents: .hourAndMinute
-                )
-                Stepper("Duration: \(duration) min",
-                        value: $duration,
-                        in: 1...180)
+                Section(header: Text("time")) {
+                    DatePicker(
+                        "Start Time",
+                        selection: $startTime,
+                        displayedComponents: .hourAndMinute
+                    )
+                }
+                Divider()
+                Section(header: Text("Duration")) {
+                    Picker("", selection: $duration) {
+                        ForEach(durationOptions, id: \.self) { value in
+                            Text("\(value) min")
+                        }
+                    }
+                    .pickerStyle(.wheel)
+                }
             }
             .background(
                 RoundedRectangle(cornerRadius: 12)
