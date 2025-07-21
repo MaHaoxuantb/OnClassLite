@@ -52,6 +52,8 @@ struct ContentView: View {
          */
         //createDefaultDaysIfNeeded
         .onAppear {
+            // Ensure default periods exist
+            createDefaultPeriodsIfNeeded(modelContext: modelContext)
             if CommonDays.count < 7 {
                 createDefaultDaysIfNeeded(modelContext: modelContext)
             }
@@ -91,6 +93,18 @@ struct ContentView: View {
                     modelContext.insert(newDay)
                     counter += 1
                 }
+            }
+            try? modelContext.save()
+        }
+    }
+    
+    //createDefaultPeriodsIfNeeded
+    private func createDefaultPeriodsIfNeeded(modelContext: ModelContext) {
+        let fetchRequest = FetchDescriptor<PeriodModel>()
+        let existing = try? modelContext.fetch(fetchRequest)
+        if existing?.isEmpty ?? true {
+            for period in PeriodModel.defaultPeriods() {
+                modelContext.insert(period)
             }
             try? modelContext.save()
         }
