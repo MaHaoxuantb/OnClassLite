@@ -5,7 +5,6 @@
 //  Created by Thomas B on 7/10/25.
 //
 
-
 import SwiftUI
 import SwiftData
 
@@ -17,6 +16,7 @@ struct EventsInCategoryView: View {
     
     //Views
     @State private var showAddEventView = false
+    @State private var selectedEvent: Event? = nil
     
     //Model
     @Environment(\.modelContext) private var modelContext
@@ -24,10 +24,10 @@ struct EventsInCategoryView: View {
     var body: some View {
         List {
             ForEach(category.events) { event in
-                NavigationLink {
-                    Text("day: \(event.name)")
+                Button {
+                    selectedEvent = event          // open edit sheet
                 } label: {
-                    Text("\(event.name)")
+                    Text(event.name)
                         .font(.headline)
                 }
                 //Card-Like style
@@ -68,6 +68,9 @@ struct EventsInCategoryView: View {
         .sheet(isPresented: $showAddEventView) {
             AddEventView(category: category)
         }
+        .sheet(item: $selectedEvent) { event in
+            AddEventView(category: category, event: event)
+        }
     }
     
     private func delete(at offsets: IndexSet) {
@@ -91,6 +94,8 @@ struct AddEventView : View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Bindable var category: CategoriesModel
+    /// `nil` when adding a new event; non‑`nil` when editing.
+    var event: Event? = nil
     
     //Form variables
     @State private var name: String = ""
@@ -109,8 +114,25 @@ struct AddEventView : View {
     
     @State private var newTag: String = ""
     
+    init(category: CategoriesModel, event: Event? = nil) {
+        self._category = Bindable(wrappedValue: category)
+        self.event = event
+        _name         = State(initialValue: event?.name ?? "")
+        _descriptions = State(initialValue: event?.descriptions ?? "")
+        _date         = State(initialValue: event?.date ?? Date())
+        _isAllDay     = State(initialValue: event?.isAllDay ?? false)
+        _duration     = State(initialValue: event?.duration ?? 60)
+        _needLoop     = State(initialValue: event?.needLoop ?? false)
+        _loopDuration = State(initialValue: event?.loopDuration ?? 0)
+        _color        = State(initialValue: event?.color ?? .accentColor)
+        _details      = State(initialValue: event?.details ?? "")
+        _tags         = State(initialValue: event?.tags?.map { $0.name } ?? [])
+    }
+    
     //View
-    let SetDurations = [15, 30, 45, 60, 90, 120, 150, 180, 240, 300]
+    let SetEventDurations = [15, 30, 45, 60, 90, 120, 150, 180, 240, 300]
+    
+    let SetLoopDurations = [1, 2, 3, 7, 14]
     
     //World
     
@@ -147,8 +169,8 @@ struct AddEventView : View {
                             }
                             .padding([.top, .leading, .trailing], 1)
                             Picker("Select Duration", selection: $duration) {
-                                ForEach(SetDurations, id: \.self) { SetDuration in
-                                    Text("\(SetDuration) minutes").tag(SetDuration)
+                                ForEach(SetEventDurations, id: \.self) { SetEventDuration in
+                                    Text("\(SetEventDuration) minutes").tag(SetEventDuration)
                                 }
                             }
                             .pickerStyle(.wheel)
@@ -179,8 +201,8 @@ struct AddEventView : View {
                             }
                             .padding([.top, .leading, .trailing], 1)
                             Picker("Select Duration", selection: $loopDuration) {
-                                ForEach(SetDurations, id: \.self) { SetDuration in
-                                    Text("\(SetDuration) minutes").tag(SetDuration)
+                                ForEach(SetLoopDurations, id: \.self) { SetLoopDuration in
+                                    Text("\(SetLoopDuration) days").tag(SetLoopDuration)
                                 }
                             }
                             .pickerStyle(.wheel)
@@ -224,7 +246,7 @@ struct AddEventView : View {
                             Spacer()
                         }
                     }
-                    .onDelete(perform: delete)
+                    .onDelete(perform: deleteTag)
                     
                     HStack {
                         Button(action: {
@@ -264,7 +286,10 @@ struct AddEventView : View {
             //HEADER
             VStack {
                 HStack {
-                    Button(action: { dismiss() }) {
+                    Button(action: {
+                        dismiss()
+                        HapticsManager.shared.playHapticFeedback()
+                    }) {
                         Image(systemName: "multiply.circle")
                             .resizable()
                             .frame(width: 26, height: 26)
@@ -282,7 +307,10 @@ struct AddEventView : View {
                     
                     Spacer()
                     
-                    Button(action: { saveEvent() }) {
+                    Button(action: {
+                        saveEvent()
+                        HapticsManager.shared.playHapticFeedback()
+                    }) {
                         Image(systemName: "checkmark.circle")
                             .resizable()
                             .frame(width: 26, height: 26)
@@ -301,35 +329,55 @@ struct AddEventView : View {
                 Spacer()
             }
         }
-        .navigationTitle(Text("Add Event"))
+        .navigationTitle(Text(event == nil ? "Add Event" : "Edit Event"))
     }
     
     private func saveEvent() {
-        let newEvent = Event(
-            name: name.isEmpty ? "Untitled" : name,
-            eventEnded: false,
-            date: date,
-            duration: isAllDay ? 0 : duration,
-            needLoop: needLoop,
-            loopDuration: needLoop ? loopDuration : nil,
-            description: descriptions.isEmpty ? nil : descriptions,
-            details: details.isEmpty ? nil : details,
-            tags: tags.map { EventTag(name: $0) },
-            color: color,
-            isReminder: false,
-            reminderFinished: false,
-            parentCategory: category
-        )
-        category.events.append(newEvent)
-        do {
-            try modelContext.save()
-            dismiss()
-        } catch {
-            print("Failed to save event: \(error)")
+        if let editing = event {
+            editing.name          = name.isEmpty ? "Untitled" : name
+            editing.date          = date
+            editing.duration      = duration
+            editing.isAllDay      = isAllDay
+            editing.needLoop      = needLoop
+            editing.loopDuration  = needLoop ? loopDuration : nil
+            editing.descriptions  = descriptions.isEmpty ? nil : descriptions
+            editing.details       = details.isEmpty ? nil : details
+            editing.tags          = tags.map { EventTag(name: $0) }
+            editing.color         = color
+            do {
+                try modelContext.save()
+                dismiss()
+            } catch {
+                print("Failed to save event: \(error)")
+            }
+        } else {
+            let newEvent = Event(
+                name: name.isEmpty ? "Untitled" : name,
+                eventEnded: false,
+                date: date,
+                duration: isAllDay ? 0 : duration,
+                needLoop: needLoop,
+                loopDuration: needLoop ? loopDuration : nil,
+                description: descriptions.isEmpty ? nil : descriptions,
+                details: details.isEmpty ? nil : details,
+                tags: tags.map { EventTag(name: $0) },
+                color: color,
+                isReminder: false,
+                reminderFinished: false,
+                parentCategory: category
+            )
+            newEvent.isAllDay = isAllDay
+            category.events.append(newEvent)
+            do {
+                try modelContext.save()
+                dismiss()
+            } catch {
+                print("Failed to save event: \(error)")
+            }
         }
     }
 
-    func delete(at offsets: IndexSet) {
+    func deleteTag(at offsets: IndexSet) {
         tags.remove(atOffsets: offsets)
     }
 

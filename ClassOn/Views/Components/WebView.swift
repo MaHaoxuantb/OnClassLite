@@ -44,7 +44,7 @@ struct WebViewContainer: View {
                     HapticsManager.shared.playHapticFeedback()
                 }
         } else {
-            Text("无效的 URL")
+            Text("Invalid URL")
                 .onAppear {
                     HapticsManager.shared.playHapticFeedback()
                 }
