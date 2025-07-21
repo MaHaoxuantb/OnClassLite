@@ -19,7 +19,7 @@ struct ClassInCommonDaysView: View {
         List {
             ForEach(commonDay.commonClasses) { commonClass in
                 NavigationLink {
-                    CommonClassFormView(commonDay: $commonDay, commonClass: .constant(commonClass), isPresented: .constant(true))
+                    CommonClassFormView(commonDay: commonDay, commonClass: .constant(commonClass), isPresented: .constant(true))
                 } label: {
                     HStack {
                         Circle()
@@ -68,7 +68,7 @@ struct ClassInCommonDaysView: View {
             }
         }
         .sheet(isPresented: $showAddClassView) {
-            CommonClassFormView(commonDay: $commonDay, commonClass: .constant(nil), isPresented: $showAddClassView)
+            CommonClassFormView(commonDay: commonDay, commonClass: .constant(nil), isPresented: $showAddClassView)
         }
         .onAppear {
             HapticsManager.shared.playHapticFeedback()
@@ -91,7 +91,7 @@ struct ClassInCommonDaysView: View {
 // Shared form for adding or editing a CommonClass
 struct CommonClassFormView: View {
     @Environment(\.modelContext) private var modelContext
-    @Binding var commonDay: CommonDaysModel
+    @Bindable var commonDay: CommonDaysModel
     @Binding var commonClass: CommonClass?
     @Binding var isPresented: Bool
 
@@ -180,10 +180,10 @@ struct CommonClassFormView: View {
                     .pickerStyle(.wheel)
                     .frame(maxHeight: 200)
                     .overlay(RoundedRectangle(cornerRadius: 20).stroke(Color.gray.opacity(0.2), lineWidth: 0.5))
-                    .onChange(of: selectedSubject) { s in
-                        if let s = s {
-                            color = s.color
-                            teacherForClass = s.teachersForSubject.first
+                    .onChange(of: selectedSubject) {
+                        if let selectedSubject = selectedSubject {
+                            color = selectedSubject.color
+                            teacherForClass = selectedSubject.teachersForSubject?.first
                         }
                     }
 
@@ -237,7 +237,7 @@ struct CommonClassFormView: View {
                     selectedPeriod = periodModels.first
                     if let first = selectedSubject {
                         color = first.color
-                        teacherForClass = first.teachersForSubject.first
+                        teacherForClass = first.teachersForSubject?.first
                     }
                 }
             }
