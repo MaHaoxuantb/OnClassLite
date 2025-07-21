@@ -27,8 +27,13 @@ struct EventsInCategoryView: View {
                 Button {
                     selectedEvent = event          // open edit sheet
                 } label: {
-                    Text(event.name)
-                        .font(.headline)
+                    HStack {
+                        Circle()
+                            .fill(event.color)
+                            .frame(width: 10, height: 10)
+                        Text(event.name)
+                            .font(.headline)
+                    }
                 }
                 //Card-Like style
                 .listRowSeparator(.hidden)
@@ -270,10 +275,10 @@ struct AddEventView : View {
             VStack {
                 LinearGradient(
                     gradient: Gradient(stops: [
-                        .init(color: .systemBackground.opacity(1.0), location: 0.0),
-                        .init(color: .systemBackground.opacity(0.52), location: 0.6),
-                        .init(color: .systemBackground.opacity(0.06), location: 0.92),
-                        .init(color: .systemBackground.opacity(0.0), location: 1.0)
+                        .init(color: .defaultBackground.opacity(1.0), location: 0.0),
+                        .init(color: .defaultBackground.opacity(0.52), location: 0.6),
+                        .init(color: .defaultBackground.opacity(0.06), location: 0.92),
+                        .init(color: .defaultBackground.opacity(0.0), location: 1.0)
                     ]),
                     startPoint: .top,
                     endPoint: .bottom
