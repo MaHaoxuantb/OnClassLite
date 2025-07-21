@@ -70,6 +70,7 @@ struct HomeView: View {
     private struct ScheduleItem: Identifiable {
         let id: UUID
         let startMinute: Int
+        let endMinute: Int
         let isClass: Bool
         let cls: CommonClass?
         let event: Event?
@@ -79,9 +80,11 @@ struct HomeView: View {
 
         // classes
         for cls in classesForDay {
+            let endMinute = cls.startMinute + cls.durationMinutes
             items.append(
                 ScheduleItem(id: cls.id,
                              startMinute: cls.startMinute,
+                             endMinute: endMinute,
                              isClass: true,
                              cls: cls,
                              event: nil)
@@ -92,9 +95,11 @@ struct HomeView: View {
         for ev in eventsForDay {
             let comps = Calendar.current.dateComponents([.hour, .minute], from: ev.date)
             let minute = (comps.hour ?? 0) * 60 + (comps.minute ?? 0)
+            let endMinute = minute + (ev.duration ?? 0)
             items.append(
                 ScheduleItem(id: ev.id,
                              startMinute: minute,
+                             endMinute: endMinute,
                              isClass: false,
                              cls: nil,
                              event: ev)
@@ -112,7 +117,7 @@ struct HomeView: View {
 
     /// The `id` of the next (or current) schedule item for today, if there is one.
     private var nextItemId: UUID? {
-        scheduleItems.first(where: { $0.startMinute >= nowMinute })?.id
+        scheduleItems.first(where: { $0.endMinute > nowMinute })?.id
     }
     
     /// Current weekday index (Mon = 0 … Sun = 6)
@@ -138,7 +143,7 @@ struct HomeView: View {
                     ForEach(scheduleItems) { item in
                         if item.isClass, let cls = item.cls {
                             ClassCardView(cls: cls, isUpcoming: item.id == nextItemId)
-                                .opacity(item.startMinute < nowMinute && item.id != nextItemId ? 0.80 : 1)
+                                .opacity(item.endMinute <= nowMinute && item.id != nextItemId ? 0.80 : 1)
                                 .listRowSeparator(.hidden)
                                 .listRowBackground(
                                     RoundedRectangle(cornerRadius: 12)
@@ -149,7 +154,7 @@ struct HomeView: View {
                                 )
                         } else if let ev = item.event {
                             EventCardView(event: ev, isUpcoming: item.id == nextItemId)
-                                .opacity(item.startMinute < nowMinute && item.id != nextItemId ? 0.80 : 1)
+                                .opacity(item.endMinute <= nowMinute && item.id != nextItemId ? 0.80 : 1)
                                 .listRowSeparator(.hidden)
                                 .listRowBackground(
                                     RoundedRectangle(cornerRadius: 12)
