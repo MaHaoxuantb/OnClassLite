@@ -5,7 +5,6 @@
 //  Created by Thomas B on 7/10/25.
 //
 
-
 import SwiftUI
 import SwiftData
 import CoreImage.CIFilterBuiltins
@@ -120,15 +119,15 @@ struct AVQRScannerView: UIViewControllerRepresentable {
 struct EditSubjectListView: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \SubjectModel.orderId) private var subjects: [SubjectModel]
-    @State private var showAddSubject = false
+    @State private var editingSubject: SubjectModel?
     @State private var showScanner   = false
     @State private var qrPayload: QRImageWrapper?
-    
+
     var body: some View {
         List {
             ForEach(subjects) { subject in
-                NavigationLink {
-                    SubjectDetailView(subject: subject)
+                Button {
+                    editingSubject = subject
                 } label: {
                     HStack {
                         Circle().fill(subject.color).frame(width: 10, height: 10)
@@ -160,13 +159,17 @@ struct EditSubjectListView: View {
                 Menu {
                     // Manually adding
                     Button {
-                        showAddSubject.toggle()
+                        editingSubject = SubjectModel(
+                            name: "",
+                            teachersForSubject: [],
+                            color: .accentColor
+                        )
                         HapticsManager.shared.playHapticFeedback()
                     } label: {
                         Image(systemName: "plus")
                         Text("Add Subject")
                     }
-                    
+
                     // Scan incoming QR code
                     Button {
                         showScanner = true
@@ -184,7 +187,7 @@ struct EditSubjectListView: View {
                         Image(systemName: "square.and.arrow.up")
                         Text("Share by QR Code")
                     }
-                    
+
                     EditButton()
                 } label: {
                     Label("More", systemImage: "ellipsis.circle.fill")
@@ -195,8 +198,8 @@ struct EditSubjectListView: View {
                 }
             }
         }
-        .sheet(isPresented: $showAddSubject) {
-            AddSubjectView(isPresented: $showAddSubject)
+        .sheet(item: $editingSubject) { subject in
+            SubjectFormView(subject: subject, isPresented: $editingSubject)
         }
         // QR‑code scanner sheet
         .sheet(isPresented: $showScanner) {
@@ -310,114 +313,88 @@ struct EditSubjectListView: View {
     }
 }
 
-//MARK: -AddSubjectView
-struct AddSubjectView: View {
-    @Environment(\.modelContext) private var modelContext
-    @Binding var isPresented: Bool
-    
-    @State private var name: String = ""
-    @State private var teachersText: String = ""
-    @State private var color: Color = .accentColor
-    
-    var body: some View {
-        VStack {
-            HStack {
-                Text("New Subject").font(.headline).padding()
-                Spacer()
-                Button {
-                    guard !name.isEmpty else { return }
-                    // Build Teacher entities from entered names
-                    let teacherNames = teachersText
-                        .split(separator: ",")
-                        .map { $0.trimmingCharacters(in: .whitespaces) }
 
-                    let teacherEntities: [Teacher] = teacherNames.compactMap { tName in
-                        if let existing = modelContext.fetchTeacher(named: tName) {
-                            return existing
-                        }
-                        let newT = Teacher(name: tName)
-                        modelContext.insert(newT)
-                        return newT
-                    }
-                    let newSubject = SubjectModel(
-                        name: name,
-                        teachersForSubject: teacherEntities,
-                        color: color
-                    )
-                    modelContext.insert(newSubject)
-                    try? modelContext.save()
-                    isPresented = false
-                    HapticsManager.shared.playHapticFeedback()
-                } label: {
-                    Image(systemName: "checkmark.circle.fill")
-                        .resizable()
-                        .frame(width: 30, height: 30)
-                        .foregroundStyle(name.isEmpty
-                             ? Color.gray.opacity(0.1)
-                             : Color.gray)
-                        .padding()
-                }
-            }
-            .padding()
-            Form {
-                TextField("Name", text: $name)
-                TextField("Teachers (comma separated)", text: $teachersText)
-                ColorPicker("Color", selection: $color)
-            }
-            .scrollContentBackground(.hidden)
-            .background(Color.clear)
-            Form {
-                Text("Understand how this works.")
-            }
-            Spacer()
-        }
-        .background(Color.gray.opacity(0.1))
-        .onAppear {
-            HapticsManager.shared.playHapticFeedback()
-        }
-    }
-}
-
-//MARK: -SubjectDetailView
-struct SubjectDetailView: View {
+// MARK: - SubjectFormView (Add & Edit)
+struct SubjectFormView: View {
     @Environment(\.modelContext) private var modelContext
-    @Bindable var subject: SubjectModel
+    @Binding var subject: SubjectModel?
+    @State private var name: String
     @State private var teachersText: String
+    @State private var color: Color
+    @State private var periods: [PeriodModel]
 
-    init(subject: SubjectModel) {
-        self.subject = subject
-        _teachersText = State(initialValue:
-            subject.teachersForSubject?
-                .map { $0.name }
-                .joined(separator: ", ") ?? "")
+    init(subject: SubjectModel? = nil, isPresented: Binding<SubjectModel?>) {
+        self._subject = isPresented
+        if let sub = subject {
+            _name = State(initialValue: sub.name)
+            _teachersText = State(initialValue: sub.teachersForSubject?.map(\.name).joined(separator: ", ") ?? "")
+            _color = State(initialValue: sub.color)
+            // Always initialize periods to default periods
+            _periods = State(initialValue: PeriodModel.defaultPeriods())
+        } else {
+            _name = State(initialValue: "")
+            _teachersText = State(initialValue: "")
+            _color = State(initialValue: .accentColor)
+            _periods = State(initialValue: PeriodModel.defaultPeriods())
+        }
     }
 
     var body: some View {
-        Form {
-            TextField("Name", text: $subject.name)
-            TextField("Teachers (comma separated)", text: $teachersText)
-                .onChange(of: teachersText) {
-                    let names = teachersText
-                        .split(separator: ",")
-                        .map { $0.trimmingCharacters(in: .whitespaces) }
-
-                    let teacherEntities = names.map { tName -> Teacher in
-                        if let existing = modelContext.fetchTeacher(named: tName) {
-                            return existing
-                        }
-                        let newT = Teacher(name: tName)
-                        modelContext.insert(newT)
-                        return newT
-                    }
-
-                    subject.teachersForSubject = teacherEntities
+        NavigationView {
+            Form {
+                Section(header: Text("Details")) {
+                    TextField("Name", text: $name)
+                    TextField("Teachers (comma separated)", text: $teachersText)
+                    ColorPicker("Color", selection: $color)
                 }
-            ColorPicker("Color", selection: $subject.color)
+                Section(header: Text("Periods")) {
+                    ForEach(periods, id: \.id) { period in
+                        HStack {
+                            Text("Period \(period.index + 1)")
+                            Spacer()
+                            Text("\(period.startMinute/60):\(String(format: "%02d", period.startMinute%60))")
+                        }
+                    }
+                }
+            }
+            .navigationTitle(subject == nil ? "New Subject" : "Edit Subject")
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button {
+                        saveSubject()
+                        subject = nil
+                    } label: {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.title2)
+                    }
+                }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button { subject = nil } label: {
+                        Image(systemName: "xmark.circle.fill")
+                            .font(.title2)
+                    }
+                }
+            }
         }
-        .navigationTitle(Text(subject.name))
-        .onDisappear { try? modelContext.save() }
-        .onAppear {
-            HapticsManager.shared.playHapticFeedback()
+    }
+
+    private func saveSubject() {
+        // Build Teacher entities
+        let teacherNames = teachersText.split(separator: ",").map { $0.trimmingCharacters(in: .whitespaces) }
+        let teacherEntities: [Teacher] = teacherNames.map { tName in
+            if let existing = modelContext.fetchTeacher(named: tName) { return existing }
+            let newT = Teacher(name: tName)
+            modelContext.insert(newT)
+            return newT
         }
+        let sub = subject ?? SubjectModel(name: name, teachersForSubject: teacherEntities, color: color)
+        sub.name = name
+        sub.teachersForSubject = teacherEntities
+        sub.color = color
+        // Do not persist periods here
+        if subject == nil {
+            modelContext.insert(sub)
+        }
+        try? modelContext.save()
     }
 }
