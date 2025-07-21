@@ -96,8 +96,9 @@ struct AddCommonClassView: View {
     @Binding var isPresented: Bool
 
     @Query(sort: \SubjectModel.name) private var subjects: [SubjectModel]
+    @Query(sort: \PeriodModel.index) private var periodModels: [PeriodModel]
     @State private var selectedSubject: SubjectModel?
-    @State private var selectedPeriodIndex = 0
+    @State private var selectedPeriod: PeriodModel? = nil
     @State private var color: Color = .accentColor
     @State private var teacherForClass: Teacher? = nil
     @State private var description = ""
@@ -114,8 +115,9 @@ struct AddCommonClassView: View {
                     Spacer()
                     Button {
                         guard let subject = selectedSubject else { return }
-                        let startMinute = SchoolSchedule.periodStartMinutes[selectedPeriodIndex]
-                        let duration = SchoolSchedule.periodDurationMinutes[selectedPeriodIndex]
+                        guard let period = selectedPeriod else { return }
+                        let startMinute = period.startMinute
+                        let duration = period.durationMinutes
 
                         // Use the subject's teachersForSubject array directly
                         let teacherEntities = subject.teachersForSubject
@@ -178,11 +180,12 @@ struct AddCommonClassView: View {
                     }
                     
                     // Period picker
-                    Picker("Period", selection: $selectedPeriodIndex) {
-                        ForEach(SchoolSchedule.periodStartMinutes.indices, id: \.self) { i in
-                            let t = SchoolSchedule.periodStartMinutes[i]
-                            Text("Period \(i+1) – \(String(format: "%02d:%02d", t/60, t%60))")
-                                .tag(i)
+                    Picker("Period", selection: $selectedPeriod) {
+                        ForEach(periodModels) { period in
+                            let hour = period.startMinute / 60
+                            let minute = period.startMinute % 60
+                            Text("Period \(period.index + 1) – \(String(format: "%02d:%02d", hour, minute))")
+                                .tag(Optional(period))
                         }
                     }
                     .pickerStyle(.wheel)
@@ -240,17 +243,21 @@ struct AddCommonClassView: View {
                     teacherForClass = first.teachersForSubject?.first
                 }
             }
+            if selectedPeriod == nil {
+                selectedPeriod = periodModels.first
+            }
         }
     }
 }
 
 //MARK: -CommonClassDetailView
+@Query(sort: \PeriodModel.index) private var periodModels: [PeriodModel]
 struct CommonClassDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Bindable var commonClass: CommonClass
 
     @State private var name: String
-    @State private var selectedPeriodIndex: Int
+    @State private var selectedPeriod: PeriodModel?
     @State private var color: Color
     @State private var teacherForClass: String
     @State private var teachersForSubjectText: String
@@ -261,8 +268,8 @@ struct CommonClassDetailView: View {
         self.commonClass = commonClass
         _name = State(initialValue: commonClass.name)
         _color = State(initialValue: commonClass.color)
-        let idx = SchoolSchedule.periodStartMinutes.firstIndex(of: commonClass.startMinute) ?? 0
-        _selectedPeriodIndex = State(initialValue: idx)
+        let period = periodModels.first(where: { $0.startMinute == commonClass.startMinute })
+        _selectedPeriod = State(initialValue: period)
         _teacherForClass = State(initialValue: commonClass.teacherForClass?.name ?? "")
         _teachersForSubjectText = State(
             initialValue: commonClass.teachersForSubject?
@@ -288,8 +295,10 @@ struct CommonClassDetailView: View {
                         // Update model
                         commonClass.name = name
                         commonClass.color = color
-                        commonClass.startMinute = SchoolSchedule.periodStartMinutes[selectedPeriodIndex]
-                        commonClass.durationMinutes = SchoolSchedule.periodDurationMinutes[selectedPeriodIndex]
+                        if let period = selectedPeriod {
+                            commonClass.startMinute = period.startMinute
+                            commonClass.durationMinutes = period.durationMinutes
+                        }
                         // Build Teacher entities for all entered names
                         var teacherEntities: [Teacher]? = nil
                         let names = teachersForSubjectText
@@ -336,13 +345,12 @@ struct CommonClassDetailView: View {
                                 .stroke(Color.gray, lineWidth: 0.2)
                         )
 
-                    Picker("Period", selection: $selectedPeriodIndex) {
-                        ForEach(SchoolSchedule.periodStartMinutes.indices, id: \.self) { index in
-                            let start = SchoolSchedule.periodStartMinutes[index]
-                            let hour = start / 60
-                            let minute = start % 60
-                            Text("Period \(index + 1) – \(String(format: "%02d:%02d", hour, minute))")
-                                .tag(index)
+                    Picker("Period", selection: $selectedPeriod) {
+                        ForEach(periodModels) { period in
+                            let hour = period.startMinute / 60
+                            let minute = period.startMinute % 60
+                            Text("Period \(period.index + 1) – \(String(format: "%02d:%02d", hour, minute))")
+                                .tag(Optional(period))
                         }
                     }
                     .pickerStyle(.wheel)
