@@ -4,7 +4,7 @@
 //
 //  Created by Thomas B on 7/10/25.
 //
-//  This View has help by ChatGPT
+//  This View has helped by ChatGPT
 //
 
 import SwiftUI
