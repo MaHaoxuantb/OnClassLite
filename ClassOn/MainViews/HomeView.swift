@@ -138,19 +138,23 @@ struct HomeView: View {
                     ForEach(scheduleItems) { item in
                         if item.isClass, let cls = item.cls {
                             ClassCardView(cls: cls, isUpcoming: item.id == nextItemId)
+                                .opacity(item.startMinute < nowMinute && item.id != nextItemId ? 0.80 : 1)
                                 .listRowSeparator(.hidden)
                                 .listRowBackground(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(.thickMaterial)
+                                        .fill(item.id == nextItemId ? .regularMaterial : .thickMaterial)
+                                        .shadow(radius: item.id == nextItemId ? 6 : 0)
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 2)
                                 )
                         } else if let ev = item.event {
                             EventCardView(event: ev, isUpcoming: item.id == nextItemId)
+                                .opacity(item.startMinute < nowMinute && item.id != nextItemId ? 0.80 : 1)
                                 .listRowSeparator(.hidden)
                                 .listRowBackground(
                                     RoundedRectangle(cornerRadius: 12)
-                                        .fill(.thinMaterial)
+                                        .fill(item.id == nextItemId ? .regularMaterial : .ultraThinMaterial)
+                                        .shadow(radius: item.id == nextItemId ? 6 : 0)
                                         .padding(.horizontal, 10)
                                         .padding(.vertical, 2)
                                 )
@@ -215,10 +219,6 @@ private struct ClassCardView: View {
             }
         }
         .padding(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.accentColor, lineWidth: isUpcoming ? 3 : 0)
-        )
     }
 }
 
@@ -265,10 +265,6 @@ private struct EventCardView: View {
             }
         }
         .padding(12)
-        .overlay(
-            RoundedRectangle(cornerRadius: 12)
-                .stroke(Color.accentColor, lineWidth: isUpcoming ? 3 : 0)
-        )
     }
 }
 
