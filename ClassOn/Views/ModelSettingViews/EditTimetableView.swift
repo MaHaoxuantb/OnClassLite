@@ -7,7 +7,37 @@
 
 import SwiftUI
 import SwiftData
+import CoreImage.CIFilterBuiltins
+import AVFoundation
 
+/// Shareable representation of a PeriodModel for QR transfer
+struct SharedPeriod: Codable {
+    let index: Int
+    let startMinute: Int
+    let durationMinutes: Int
+}
+
+private extension PeriodModel {
+    /// Convert a period into its shareable payload.
+    var sharedPayload: SharedPeriod {
+        SharedPeriod(index: index,
+                     startMinute: startMinute,
+                     durationMinutes: durationMinutes)
+    }
+}
+
+/// Simple QR‑code generator.
+private func generateQRCode(from string: String) -> UIImage? {
+    let context = CIContext()
+    let filter  = CIFilter.qrCodeGenerator()
+    filter.setValue(Data(string.utf8), forKey: "inputMessage")
+
+    guard let outputImage = filter.outputImage?.transformed(by: CGAffineTransform(scaleX: 10, y: 10)),
+          let cgImg = context.createCGImage(outputImage, from: outputImage.extent)
+    else { return nil }
+
+    return UIImage(cgImage: cgImg)
+}
 
 //MARK: -EditTimetableView
 struct EditTimetableView: View {
@@ -15,6 +45,11 @@ struct EditTimetableView: View {
     @Query(sort: \PeriodModel.index) private var periods: [PeriodModel]
     @State private var showExpandedTools: Bool = false
     @State private var selectedPeriod: PeriodModel?
+    // QR‑sharing state
+    @State private var showScanner = false
+    @State private var qrPayload: QRImageWrapper?
+    @State private var incomingPayloads: [SharedPeriod] = []
+    @State private var showOverwriteAlert = false
     
     var body: some View {
         List {
@@ -50,13 +85,15 @@ struct EditTimetableView: View {
                     }
                     
                     Button {
-                        
+                        showScanner = true
+                        HapticsManager.shared.playHapticFeedback()
                     } label: {
                         Image(systemName: "qrcode.viewfinder")
-                        Text("Scan To Add")
+                        Text("Scan To Import")
                     }
                     Button {
-                        
+                        shareAllPeriods()
+                        HapticsManager.shared.playHapticFeedback()
                     } label: {
                         Image(systemName: "square.and.arrow.up")
                         Text("Share by QR Code")
@@ -81,6 +118,35 @@ struct EditTimetableView: View {
                 periodToEdit: period
             )
         }
+        // QR‑code scanner sheet
+        .sheet(isPresented: $showScanner) {
+            AVQRScannerView { code in
+                handleScanned(code: code)
+                showScanner = false
+            }
+        }
+        // QR‑code display sheet
+        .sheet(item: $qrPayload) { payload in
+            VStack {
+                Image(uiImage: payload.image)
+                    .interpolation(.none)
+                    .resizable()
+                    .scaledToFit()
+                    .padding()
+                Text("Scan this on another device to import the timetable.")
+                    .padding()
+            }
+        }
+        // Overwrite confirmation alert
+        .alert("Replace current timetable?", isPresented: $showOverwriteAlert) {
+            Button("Cancel", role: .cancel) { incomingPayloads = [] }
+            Button("Replace", role: .destructive) {
+                importPeriods(incomingPayloads)
+                incomingPayloads = []
+            }
+        } message: {
+            Text("Importing via QR code will delete all existing periods and add the ones from the QR code.")
+        }
         .onAppear {
             HapticsManager.shared.playHapticFeedback()
         }
@@ -99,6 +165,44 @@ struct EditTimetableView: View {
     }
     private func timeString(for m: Int) -> String {
         String(format: "%02d:%02d", m / 60, m % 60)
+    }
+    
+    // MARK: - QR Sharing & Import
+    private func shareAllPeriods() {
+        let payloads = periods.map { $0.sharedPayload }
+        guard let data = try? JSONEncoder().encode(payloads),
+              let json = String(data: data, encoding: .utf8),
+              let img  = generateQRCode(from: json) else { return }
+        qrPayload = QRImageWrapper(image: img)
+    }
+
+    private func handleScanned(code: String) {
+        guard let data = code.data(using: .utf8) else { return }
+        let decoder = JSONDecoder()
+        let payloads: [SharedPeriod]
+        if let many = try? decoder.decode([SharedPeriod].self, from: data) {
+            payloads = many
+        } else if let single = try? decoder.decode(SharedPeriod.self, from: data) {
+            payloads = [single]
+        } else { return }
+        incomingPayloads = payloads
+        showOverwriteAlert = true
+    }
+
+    private func importPeriods(_ payloads: [SharedPeriod]) {
+        // Remove existing periods
+        withAnimation { periods.forEach(modelContext.delete) }
+        try? modelContext.save()
+
+        // Insert new periods sorted by original index
+        for (idx, p) in payloads.sorted(by: { $0.index < $1.index }).enumerated() {
+            let newP = PeriodModel(index: idx,
+                                   startMinute: p.startMinute,
+                                   durationMinutes: p.durationMinutes)
+            modelContext.insert(newP)
+        }
+        try? modelContext.save()
+        HapticsManager.shared.playHapticFeedback()
     }
 }
 

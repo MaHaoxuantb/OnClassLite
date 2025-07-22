@@ -134,8 +134,8 @@ struct HomeView: View {
     
     var body: some View {
         NavigationStack {
-            if classesForDay.isEmpty {
-                ContentUnavailableView("No upcoming classes 🎉",
+            if scheduleItems.isEmpty {
+                ContentUnavailableView("No upcoming Events 🎉",
                                        systemImage: "checkmark.seal")
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
