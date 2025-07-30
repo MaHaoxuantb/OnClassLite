@@ -11,20 +11,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		A9FCCDD82E39FD05009AF07D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A973F4BB2E1D0A8F001491B3 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A9FCCDC62E39FD05009AF07D;
-			remoteInfo = OnClassTrail;
-		};
-		A9FCCDE22E39FD05009AF07D /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = A973F4BB2E1D0A8F001491B3 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = A9FCCDC62E39FD05009AF07D;
-			remoteInfo = OnClassTrail;
-		};
 		A9FCCDE92E39FD05009AF07D /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A973F4BB2E1D0A8F001491B3 /* Project object */;
@@ -51,8 +37,6 @@
 /* Begin PBXFileReference section */
 		A973F4C32E1D0A8F001491B3 /* OnClassLite.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OnClassLite.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A9FCCDC72E39FD05009AF07D /* OnClassTrail.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OnClassTrail.app; sourceTree = BUILT_PRODUCTS_DIR; };
-		A9FCCDD72E39FD05009AF07D /* OnClassTrailTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OnClassTrailTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		A9FCCDE12E39FD05009AF07D /* OnClassTrailUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OnClassTrailUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -89,16 +73,6 @@
 			path = OnClassTrail;
 			sourceTree = "<group>";
 		};
-		A9FCCDDA2E39FD05009AF07D /* OnClassTrailTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = OnClassTrailTests;
-			sourceTree = "<group>";
-		};
-		A9FCCDE42E39FD05009AF07D /* OnClassTrailUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = OnClassTrailUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -116,20 +90,6 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A9FCCDD42E39FD05009AF07D /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A9FCCDDE2E39FD05009AF07D /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -138,8 +98,6 @@
 			children = (
 				A973F4C52E1D0A8F001491B3 /* ClassOn */,
 				A9FCCDC82E39FD05009AF07D /* OnClassTrail */,
-				A9FCCDDA2E39FD05009AF07D /* OnClassTrailTests */,
-				A9FCCDE42E39FD05009AF07D /* OnClassTrailUITests */,
 				A973F4C42E1D0A8F001491B3 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -149,8 +107,6 @@
 			children = (
 				A973F4C32E1D0A8F001491B3 /* OnClassLite.app */,
 				A9FCCDC72E39FD05009AF07D /* OnClassTrail.app */,
-				A9FCCDD72E39FD05009AF07D /* OnClassTrailTests.xctest */,
-				A9FCCDE12E39FD05009AF07D /* OnClassTrailUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -204,52 +160,6 @@
 			productReference = A9FCCDC72E39FD05009AF07D /* OnClassTrail.app */;
 			productType = "com.apple.product-type.application.on-demand-install-capable";
 		};
-		A9FCCDD62E39FD05009AF07D /* OnClassTrailTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A9FCCDF52E39FD05009AF07D /* Build configuration list for PBXNativeTarget "OnClassTrailTests" */;
-			buildPhases = (
-				A9FCCDD32E39FD05009AF07D /* Sources */,
-				A9FCCDD42E39FD05009AF07D /* Frameworks */,
-				A9FCCDD52E39FD05009AF07D /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				A9FCCDD92E39FD05009AF07D /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				A9FCCDDA2E39FD05009AF07D /* OnClassTrailTests */,
-			);
-			name = OnClassTrailTests;
-			packageProductDependencies = (
-			);
-			productName = OnClassTrailTests;
-			productReference = A9FCCDD72E39FD05009AF07D /* OnClassTrailTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		A9FCCDE02E39FD05009AF07D /* OnClassTrailUITests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = A9FCCDF62E39FD05009AF07D /* Build configuration list for PBXNativeTarget "OnClassTrailUITests" */;
-			buildPhases = (
-				A9FCCDDD2E39FD05009AF07D /* Sources */,
-				A9FCCDDE2E39FD05009AF07D /* Frameworks */,
-				A9FCCDDF2E39FD05009AF07D /* Resources */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				A9FCCDE32E39FD05009AF07D /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				A9FCCDE42E39FD05009AF07D /* OnClassTrailUITests */,
-			);
-			name = OnClassTrailUITests;
-			packageProductDependencies = (
-			);
-			productName = OnClassTrailUITests;
-			productReference = A9FCCDE12E39FD05009AF07D /* OnClassTrailUITests.xctest */;
-			productType = "com.apple.product-type.bundle.ui-testing";
-		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -265,14 +175,6 @@
 					};
 					A9FCCDC62E39FD05009AF07D = {
 						CreatedOnToolsVersion = 16.4;
-					};
-					A9FCCDD62E39FD05009AF07D = {
-						CreatedOnToolsVersion = 16.4;
-						TestTargetID = A9FCCDC62E39FD05009AF07D;
-					};
-					A9FCCDE02E39FD05009AF07D = {
-						CreatedOnToolsVersion = 16.4;
-						TestTargetID = A9FCCDC62E39FD05009AF07D;
 					};
 				};
 			};
@@ -292,8 +194,6 @@
 			targets = (
 				A973F4C22E1D0A8F001491B3 /* OnClassLite */,
 				A9FCCDC62E39FD05009AF07D /* OnClassTrail */,
-				A9FCCDD62E39FD05009AF07D /* OnClassTrailTests */,
-				A9FCCDE02E39FD05009AF07D /* OnClassTrailUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -307,20 +207,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		A9FCCDC52E39FD05009AF07D /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A9FCCDD52E39FD05009AF07D /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A9FCCDDF2E39FD05009AF07D /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -344,33 +230,9 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		A9FCCDD32E39FD05009AF07D /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		A9FCCDDD2E39FD05009AF07D /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		A9FCCDD92E39FD05009AF07D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A9FCCDC62E39FD05009AF07D /* OnClassTrail */;
-			targetProxy = A9FCCDD82E39FD05009AF07D /* PBXContainerItemProxy */;
-		};
-		A9FCCDE32E39FD05009AF07D /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = A9FCCDC62E39FD05009AF07D /* OnClassTrail */;
-			targetProxy = A9FCCDE22E39FD05009AF07D /* PBXContainerItemProxy */;
-		};
 		A9FCCDEA2E39FD05009AF07D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = A9FCCDC62E39FD05009AF07D /* OnClassTrail */;
@@ -575,17 +437,19 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = OnClassTrail/OnClassTrail.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 29;
 				DEVELOPMENT_TEAM = 832FW23SZD;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OnClassTrail/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = OnClassLite;
+				INFOPLIST_KEY_CFBundleDisplayName = OnClassTrail;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -606,17 +470,19 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = OnClassTrail/OnClassTrail.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 29;
 				DEVELOPMENT_TEAM = 832FW23SZD;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = OnClassTrail/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = OnClassLite;
+				INFOPLIST_KEY_CFBundleDisplayName = OnClassTrail;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.productivity";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -627,78 +493,6 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-			};
-			name = Release;
-		};
-		A9FCCDEF2E39FD05009AF07D /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 832FW23SZD;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.yunlu.thomasb.OnClassLite.OnClassTrailTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OnClassTrail.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OnClassTrail";
-			};
-			name = Debug;
-		};
-		A9FCCDF02E39FD05009AF07D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 832FW23SZD;
-				GENERATE_INFOPLIST_FILE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.5;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.yunlu.thomasb.OnClassLite.OnClassTrailTests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OnClassTrail.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/OnClassTrail";
-			};
-			name = Release;
-		};
-		A9FCCDF12E39FD05009AF07D /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 832FW23SZD;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.yunlu.thomasb.OnClassLite.OnClassTrailUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = OnClassTrail;
-			};
-			name = Debug;
-		};
-		A9FCCDF22E39FD05009AF07D /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 832FW23SZD;
-				GENERATE_INFOPLIST_FILE = YES;
-				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.yunlu.thomasb.OnClassLite.OnClassTrailUITests;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = OnClassTrail;
 			};
 			name = Release;
 		};
@@ -728,24 +522,6 @@
 			buildConfigurations = (
 				A9FCCDED2E39FD05009AF07D /* Debug */,
 				A9FCCDEE2E39FD05009AF07D /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		A9FCCDF52E39FD05009AF07D /* Build configuration list for PBXNativeTarget "OnClassTrailTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A9FCCDEF2E39FD05009AF07D /* Debug */,
-				A9FCCDF02E39FD05009AF07D /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		A9FCCDF62E39FD05009AF07D /* Build configuration list for PBXNativeTarget "OnClassTrailUITests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				A9FCCDF12E39FD05009AF07D /* Debug */,
-				A9FCCDF22E39FD05009AF07D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
